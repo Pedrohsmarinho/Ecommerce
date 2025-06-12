@@ -3,6 +3,8 @@ import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { User, UserType } from '@prisma/client';
+import { sendVerificationEmail } from '../utils/email';
+import { generateVerificationToken } from '../utils/token';
 
 @Injectable()
 export class AuthService {
@@ -26,19 +28,26 @@ export class AuthService {
     };
   }
 
-  async register(email: string, password: string, name: string) {
+  async register(email: string, password: string, name: string, type: UserType) {
     const hashedPassword = await bcrypt.hash(password, 10);
+    const token = generateVerificationToken();
+    const expires = new Date();
+    expires.setHours(expires.getHours() + 24);
+
     const user = await this.prisma.user.create({
       data: {
         email,
         password: hashedPassword,
         name,
-        type: UserType.CLIENT,
+        type,
         emailVerified: false,
-        emailVerifyToken: null,
-        emailVerifyTokenExpires: new Date(),
+        emailVerifyToken: token,
+        emailVerifyTokenExpires: expires,
       },
     });
+
+    await sendVerificationEmail(email, token);
+
     return user;
   }
 }
