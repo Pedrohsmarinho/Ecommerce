@@ -3,7 +3,9 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import userRoutes from './routes/user.routes';
 import authRoutes from './routes/auth.routes';
+import testRoutes from './routes/test.routes';
 
+// Load environment variables
 dotenv.config();
 
 const app = express();
@@ -15,6 +17,7 @@ app.use(express.json());
 // Routes
 app.use('/api/users', userRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/test', testRoutes);
 
 // Health check
 app.get('/health', (_, res) => {
