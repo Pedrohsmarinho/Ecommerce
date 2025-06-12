@@ -252,3 +252,29 @@ curl -X GET http://localhost:3000/api/users/me \
 ---
 
 **Status**: ✅ **Complete Authentication System Ready for Production Use**
+
+## Rotas da API
+
+### Autenticação (`/auth`)
+- `POST /auth/login` - Login de usuário
+- `POST /auth/register` - Registro de novo usuário
+
+### Usuários (`/users`)
+- `GET /users/me` - Obter perfil do usuário logado (requer autenticação)
+- `POST /users/verify-email` - Verificar email do usuário
+- `POST /users/resend-verification` - Reenviar email de verificação
+- `GET /users` - Listar todos os usuários (requer autenticação e role ADMIN)
+- `GET /users/:id` - Obter usuário por ID (requer autenticação e role ADMIN)
+
+## Documentação
+A documentação completa da API está disponível em `/api` quando o servidor estiver rodando.
+
+## Autenticação
+Todas as rotas protegidas requerem um token JWT no header:
+```
+Authorization: Bearer <seu-token>
+```
+
+## Roles
+- `ADMIN`: Acesso total ao sistema
+- `CLIENT`: Acesso limitado às próprias informações
