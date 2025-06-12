@@ -4,8 +4,7 @@ import { loginRequestSchema } from '../dtos/LoginRequestDTO';
 import { tokenVerificationSchema } from '../dtos/TokenVerificationDTO';
 import { registerRequestSchema } from '../dtos/RegisterRequestDTO';
 import { authenticate, verifyToken } from '../services/AuthService';
-import prisma from '../config/database';
-import { hash } from 'bcrypt';
+import { createUser } from '../services/UserService';
 import { UserType } from '@prisma/client';
 
 export async function loginUser(req: Request, res: Response) {
@@ -93,45 +92,15 @@ export async function registerUser(req: Request, res: Response) {
   try {
     const parsed = registerRequestSchema.parse(req.body);
 
-    const existingUser = await prisma.user.findUnique({
-      where: { email: parsed.email },
+    // Create user with verification token
+    const user = await createUser({
+      name: parsed.name,
+      email: parsed.email,
+      password: parsed.password,
+      type: parsed.type as UserType,
     });
 
-    if (existingUser) {
-      res.status(400).json({
-        error: 'Registration failed',
-        message: 'Email already registered',
-      });
-      return;
-    }
-
-    // Hash password
-    const hashedPassword = await hash(parsed.password, 10);
-
-    // Create user
-    const user = await prisma.user.create({
-      data: {
-        name: parsed.name,
-        email: parsed.email,
-        password: hashedPassword,
-        type: parsed.type as UserType,
-        emailVerified: false,
-        ...(parsed.type === 'CLIENT' && {
-          client: {
-            create: {
-              fullName: parsed.fullName!,
-              contact: parsed.contact!,
-              address: parsed.address!,
-            },
-          },
-        }),
-      },
-      include: {
-        client: true,
-      },
-    });
-
-    // Generate token
+    // Generate authentication token
     const token = await authenticate({
       email: parsed.email,
       password: parsed.password,
@@ -144,9 +113,10 @@ export async function registerUser(req: Request, res: Response) {
         name: user.name,
         email: user.email,
         type: user.type,
-        client: user.client,
+        emailVerified: user.emailVerified,
       },
       token: token?.token,
+      verificationToken: user.emailVerifyToken, // Include verification token in response
     });
   } catch (err: unknown) {
     if (err instanceof ZodError) {
@@ -156,6 +126,14 @@ export async function registerUser(req: Request, res: Response) {
           field: e.path.join('.'),
           message: e.message,
         })),
+      });
+      return;
+    }
+
+    if (err instanceof Error && err.message === 'Email already registered') {
+      res.status(400).json({
+        error: 'Registration failed',
+        message: 'Email already registered',
       });
       return;
     }
