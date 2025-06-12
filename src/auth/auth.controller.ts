@@ -1,10 +1,13 @@
-import { Controller, Post, Body, UnauthorizedException, UseGuards, Get, Req } from '@nestjs/common';
+import { Controller, Post, Body, UnauthorizedException, UseGuards, Get, Req, Request } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { LocalAuthGuard } from './guards/local-auth.guard';
+import { RolesGuard } from './guards/roles.guard';
+import { Roles } from './decorators/roles.decorator';
+import { UserType } from '@prisma/client';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -51,5 +54,25 @@ export class AuthController {
   @Post('logout')
   async logout(@Req() req) {
     return this.authService.logout(req.user.id);
+  }
+
+  @Get('test/client')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserType.CLIENT)
+  testClientRoute(@Request() req) {
+    return {
+      message: 'Client route accessed successfully',
+      user: req.user
+    };
+  }
+
+  @Get('test/admin')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserType.ADMIN)
+  testAdminRoute(@Request() req) {
+    return {
+      message: 'Admin route accessed successfully',
+      user: req.user
+    };
   }
 }

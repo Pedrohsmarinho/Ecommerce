@@ -6,6 +6,7 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { EmailVerificationDto } from './dto/email-verification.dto';
 import { ResendVerificationDto } from './dto/resend-verification.dto';
+import { UserType } from '@prisma/client';
 
 @ApiTags('users')
 @ApiBearerAuth()
@@ -37,7 +38,7 @@ export class UserController {
 
   @Get()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('ADMIN')
+  @Roles(UserType.ADMIN)
   @ApiOperation({ summary: 'Get all users' })
   @ApiResponse({ status: 200, description: 'Return all users' })
   async findAll() {
@@ -46,7 +47,7 @@ export class UserController {
 
   @Get(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('ADMIN')
+  @Roles(UserType.ADMIN)
   @ApiOperation({ summary: 'Get user by id' })
   @ApiResponse({ status: 200, description: 'Return user by id' })
   async findOne(@Request() req) {

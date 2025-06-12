@@ -1,6 +1,6 @@
 # Ecommerce API with Authentication System
 
-A comprehensive ecommerce API built with Node.js, Express, TypeScript, Prisma, and PostgreSQL featuring a complete authentication system with JWT tokens.
+A comprehensive ecommerce API built with NestJS, TypeScript, Prisma, and PostgreSQL featuring a complete authentication system with JWT tokens and granular permissions.
 
 ## 🚀 Features Implemented
 
@@ -9,22 +9,23 @@ A comprehensive ecommerce API built with Node.js, Express, TypeScript, Prisma, a
 - **User Login** with JWT token generation
 - **Token Verification** endpoint
 - **Password Hashing** using bcrypt
-- **JWT Middleware** for route protection
-- **Role-Based Access Control** (RBAC) with ADMIN/CLIENT roles
+- **JWT Guards** for route protection
+- **Permission-Based Access Control** with granular permissions
 - **Protected Routes** requiring authentication
 
 ### 🔐 Security Features
 - Password hashing with bcrypt (salt rounds: 10)
 - JWT token-based authentication
-- Input validation with Zod schemas
+- Input validation with class-validator
 - Type-safe request/response handling
 - Environment variable configuration
+- Granular permission system
 
 ## 📋 API Endpoints
 
-### Authentication Routes (`/api/auth`)
+### Authentication Routes (`/auth`)
 
-#### POST `/api/auth/login`
+#### POST `/auth/login`
 Login with email and password to receive JWT token.
 
 **Request Body:**
@@ -38,42 +39,14 @@ Login with email and password to receive JWT token.
 **Success Response (200):**
 ```json
 {
-  "message": "Login successful",
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "user": {
-    "id": "uuid",
-    "name": "John Doe",
-    "email": "user@example.com",
-    "type": "CLIENT"
-  }
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 }
 ```
 
-#### POST `/api/auth/verify`
-Verify if a JWT token is valid.
+### User Routes (`/users`)
 
-**Request Body:**
-```json
-{
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-}
-```
-
-**Success Response (200):**
-```json
-{
-  "message": "Token is valid",
-  "user": {
-    "userId": "uuid",
-    "email": "user@example.com",
-    "type": "CLIENT"
-  }
-}
-```
-
-### User Routes (`/api/users`)
-
-#### POST `/api/users/register`
+#### POST `/users/register`
 Register a new user account.
 
 **Request Body:**
@@ -86,35 +59,41 @@ Register a new user account.
 }
 ```
 
-**Success Response (201):**
-```json
-{
-  "id": "uuid",
-  "email": "user@example.com"
-}
-```
-
-#### GET `/api/users/me` 🔒
-Get the current authenticated user's profile. **Requires Authentication Header.**
+#### GET `/users/me` 🔒
+Get the current authenticated user's profile.
 
 **Headers:**
 ```
 Authorization: Bearer <your-jwt-token>
 ```
 
-**Success Response (200):**
+### Product Routes (`/products`)
+
+#### GET `/products` 🔒
+Get all products. Requires `read:product` permission.
+
+#### GET `/products/:id` 🔒
+Get a specific product. Requires `read:product` permission.
+
+#### POST `/products` 🔒
+Create a new product. Requires `create:product` permission.
+
+**Request Body:**
 ```json
 {
-  "user": {
-    "id": "uuid",
-    "name": "John Doe",
-    "email": "user@example.com",
-    "type": "CLIENT",
-    "created_at": "2024-01-01T00:00:00.000Z",
-    "updated_at": "2024-01-01T00:00:00.000Z"
-  }
+  "name": "Product Name",
+  "description": "Product Description",
+  "price": 99.99,
+  "stock": 10,
+  "categoryId": "category-id"
 }
 ```
+
+#### PUT `/products/:id` 🔒
+Update a product. Requires `update:product` permission.
+
+#### DELETE `/products/:id` 🔒
+Delete a product. Requires `delete:product` permission.
 
 ## 🛠️ Setup Instructions
 
@@ -125,9 +104,8 @@ Create a `.env` file in the project root:
 # Database URL (update with your PostgreSQL credentials)
 DATABASE_URL="postgresql://username:password@localhost:5432/ecommerce"
 
-# JWT Configuration - IMPORTANT: Use a secure random string in production
+# JWT Configuration
 JWT_SECRET="your-super-secret-jwt-key-replace-with-secure-random-string"
-JWT_EXPIRES_IN="24h"
 
 # Server Configuration
 PORT=3000
@@ -153,73 +131,59 @@ npx prisma db seed
 ### 4. Start the Server
 ```bash
 # Development mode
-npm run dev
+npm run start:dev
 
 # Production mode
 npm run build
-npm start
+npm run start:prod
 ```
 
 ## 📁 Project Structure
 
 ```
 src/
-├── controllers/          # Request handlers
-│   ├── AuthController.ts  # Login, token verification
-│   └── UserController.ts  # User registration, profile
-├── dtos/                 # Data Transfer Objects with Zod validation
-│   ├── CreateUserDTO.ts   # User registration validation
-│   ├── LoginRequestDTO.ts # Login validation
-│   └── TokenVerificationDTO.ts # Token validation
-├── middlewares/          # Express middlewares
-│   ├── authMiddleware.ts  # JWT authentication & RBAC
-│   └── validation.ts      # Zod schema validation
-├── routes/               # Route definitions
-│   ├── auth.routes.ts     # Authentication endpoints
-│   └── user.routes.ts     # User endpoints
-├── services/             # Business logic
-│   ├── AuthService.ts     # JWT operations, authentication
-│   └── UserService.ts     # User operations
-├── types/                # TypeScript type definitions
-│   └── express.d.ts       # Extended Express types
-├── utils/                # Utility functions
-│   └── hash.ts           # Password hashing utilities
-└── index.ts             # Application entry point
+├── auth/                 # Authentication module
+│   ├── decorators/       # Custom decorators
+│   ├── guards/          # Authentication guards
+│   ├── strategies/      # Passport strategies
+│   └── auth.module.ts   # Auth module definition
+├── product/             # Product module
+│   ├── product.controller.ts
+│   ├── product.service.ts
+│   └── product.module.ts
+├── user/                # User module
+│   ├── user.controller.ts
+│   ├── user.service.ts
+│   └── user.module.ts
+├── prisma/              # Database configuration
+│   └── prisma.service.ts
+├── dtos/                # Data Transfer Objects
+└── main.ts             # Application entry point
 ```
 
-## 🔒 Authentication Flow
+## 🔒 Permission System
 
-1. **Registration**: User registers with `/api/users/register`
-2. **Login**: User logs in with `/api/auth/login` and receives JWT token
-3. **Protected Access**: User includes `Authorization: Bearer <token>` header for protected routes
-4. **Token Verification**: Middleware validates JWT token on each protected request
+The API uses a granular permission system with the following permissions:
 
-## 🛡️ Security Best Practices Implemented
+### Product Permissions
+- `create:product` - Create new products
+- `read:product` - View products
+- `update:product` - Update existing products
+- `delete:product` - Delete products
 
-- ✅ Password hashing with bcrypt
-- ✅ JWT tokens with expiration
-- ✅ Input validation with Zod schemas
-- ✅ Type-safe request handling
-- ✅ Role-based access control
-- ✅ Environment variable configuration
-- ✅ Error handling for security scenarios
+### User Permissions
+- `manage:users` - Manage user accounts
 
-## 🔧 Available Middlewares
+### Order Permissions
+- `manage:orders` - Manage orders
+- `view:orders` - View orders
 
-### `authMiddleware`
-Protects routes requiring authentication.
+### Category Permissions
+- `manage:categories` - Manage product categories
 
-### `requireRole(['ADMIN', 'CLIENT'])`
-Restricts access based on user role.
-
-### `requireAdmin`
-Allows only ADMIN users.
-
-### `requireClientOrAdmin`
-Allows both CLIENT and ADMIN users.
-
-### `validate(schema)`
-Validates request body against Zod schema.
+### Role-Based Permissions
+- **ADMIN**: Has all permissions
+- **CLIENT**: Has limited permissions (read:product, view:orders)
 
 ## 🧪 Testing the API
 
@@ -227,17 +191,29 @@ Validates request body against Zod schema.
 
 ```bash
 # Register a new user
-curl -X POST http://localhost:3000/api/users/register \
+curl -X POST http://localhost:3000/auth/register \
   -H "Content-Type: application/json" \
   -d '{"name":"John Doe","email":"john@example.com","password":"password123","type":"CLIENT"}'
 
 # Login
-curl -X POST http://localhost:3000/api/auth/login \
+curl -X POST http://localhost:3000/auth/login \
   -H "Content-Type: application/json" \
   -d '{"email":"john@example.com","password":"password123"}'
 
-# Get user profile (replace TOKEN with actual JWT)
-curl -X GET http://localhost:3000/api/users/me \
+# Create a product (requires admin token)
+curl -X POST http://localhost:3000/products \
+  -H "Authorization: Bearer TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Test Product",
+    "description": "Test Description",
+    "price": 99.99,
+    "stock": 10,
+    "categoryId": "category-id"
+  }'
+
+# Get all products
+curl -X GET http://localhost:3000/products \
   -H "Authorization: Bearer TOKEN"
 ```
 
@@ -248,6 +224,8 @@ curl -X GET http://localhost:3000/api/users/me \
 3. **HTTPS**: Always use HTTPS in production
 4. **Rate Limiting**: Implement rate limiting for authentication endpoints
 5. **Logging**: Add comprehensive logging for security events
+6. **CORS**: Configure CORS properly for your frontend
+7. **Environment Variables**: Use proper environment variable management
 
 ---
 
