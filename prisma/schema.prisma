@@ -24,7 +24,6 @@ model User {
   created_at        DateTime  @default(now())
   updated_at        DateTime  @updatedAt
   client            Client?
-  products          Product[]
 }
 
 model Client {
@@ -49,8 +48,6 @@ model Product {
   stock       Int
   created_at  DateTime      @default(now())
   updated_at  DateTime      @updatedAt
-  seller      User            @relation(fields: [sellerId], references: [id])
-  sellerId    String
   category    Category        @relation(fields: [categoryId], references: [id])
   categoryId  String
   orderItems  OrderItem[]

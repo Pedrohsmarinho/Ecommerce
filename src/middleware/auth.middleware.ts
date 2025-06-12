@@ -1,28 +1,27 @@
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response, NextFunction, RequestHandler } from 'express';
 import jwt from 'jsonwebtoken';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, UserType } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-export const authenticate = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const authenticate: RequestHandler = async (req, res, next) => {
   try {
-    const authHeader = req.headers.authorization;
+    const token = req.headers.authorization?.split(' ')[1];
 
-    if (!authHeader) {
-      res.status(401).json({ message: 'No token provided' });
-      return;
-    }
-
-    const token = authHeader.split(' ')[1];
     if (!token) {
       res.status(401).json({ message: 'No token provided' });
       return;
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { id: string };
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as {
+      email: string;
+      sub: string;
+      roles: string[];
+      type: UserType;
+    };
 
     const user = await prisma.user.findUnique({
-      where: { id: decoded.id },
+      where: { id: decoded.sub }
     });
 
     if (!user) {
@@ -30,11 +29,15 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
       return;
     }
 
-    // Attach user to request object
-    req.user = user;
+    req.user = {
+      email: user.email,
+      sub: user.id,
+      roles: decoded.roles,
+      type: user.type
+    };
+
     next();
   } catch (error) {
-    console.error('Authentication error:', error);
     res.status(401).json({ message: 'Invalid token' });
   }
 };
