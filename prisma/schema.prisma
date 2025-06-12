@@ -19,6 +19,7 @@ model User {
   type              UserType
   emailVerified     Boolean   @default(false)
   emailVerifyToken  String?
+  emailVerifyTokenExpires DateTime?
   created_at        DateTime  @default(now())
   updated_at        DateTime  @updatedAt
   client            Client?
