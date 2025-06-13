@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateClientDto } from '../dtos/client.dto';
+import { CreateClientDto, FilterClientDto } from '../dtos/client.dto';
 import { UpdateClientDto } from '../dtos/client.dto';
 
 @Injectable()
@@ -89,5 +89,47 @@ export class ClientService {
     } catch (error) {
       throw new NotFoundException(`Client with ID ${id} not found`);
     }
+  }
+
+  async findWithFilters(filters: FilterClientDto) {
+    const where: any = {};
+
+    if (filters.name) {
+      where.user = {
+        ...where.user,
+        name: {
+          contains: filters.name,
+          mode: 'insensitive',
+        },
+      };
+    }
+
+    if (filters.email) {
+      where.user = {
+        ...where.user,
+        email: {
+          contains: filters.email,
+          mode: 'insensitive',
+        },
+      };
+    }
+
+    if (filters.status !== undefined) {
+      where.status = filters.status;
+    }
+
+    return this.prisma.client.findMany({
+      where,
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            type: true,
+          },
+        },
+      },
+    });
   }
 }
