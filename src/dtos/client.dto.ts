@@ -35,3 +35,9 @@ export class UpdateClientDto {
   @IsOptional()
   status?: boolean;
 }
+
+export class FilterClientDto {
+  name?: string;
+  email?: string;
+  status?: boolean;
+}

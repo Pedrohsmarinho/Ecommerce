@@ -1,6 +1,6 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query } from '@nestjs/common';
 import { ClientService } from './client.service';
-import { CreateClientDto, UpdateClientDto } from '../dtos/client.dto';
+import { CreateClientDto, UpdateClientDto, FilterClientDto } from '../dtos/client.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -18,7 +18,10 @@ export class ClientController {
   }
 
   @Get()
-  findAll() {
+  findAll(@Query() filters: FilterClientDto) {
+    if (Object.keys(filters).length > 0) {
+      return this.clientService.findWithFilters(filters);
+    }
     return this.clientService.findAll();
   }
 
