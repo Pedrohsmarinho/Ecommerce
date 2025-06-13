@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { UserType } from '@prisma/client';
 import { sendVerificationEmail } from '../utils/email';
 
 @Injectable()
@@ -35,10 +36,45 @@ export class UserService {
     });
 
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException(`User with ID ${id} not found`);
     }
 
     return user;
+  }
+
+  async remove(id: string) {
+    try {
+      await this.prisma.user.delete({
+        where: { id },
+      });
+      return { message: 'User deleted successfully' };
+    } catch (error) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+  }
+
+  async update(id: string, updateUserDto: any) {
+    try {
+      return await this.prisma.user.update({
+        where: { id },
+        data: {
+          name: updateUserDto.name,
+          email: updateUserDto.email,
+          type: updateUserDto.type as UserType,
+        },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          type: true,
+          emailVerified: true,
+          created_at: true,
+          updated_at: true,
+        },
+      });
+    } catch (error) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
   }
 
   async findByEmail(email: string) {

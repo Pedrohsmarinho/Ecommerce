@@ -8,7 +8,13 @@ export type Permission =
   | 'manage:users'
   | 'manage:orders'
   | 'view:orders'
-  | 'manage:categories';
+  | 'manage:categories'
+  | 'manage:clients'
+  | 'create:user'
+  | 'update:user'
+  | 'delete:user'
+  | 'view:users'
+  | 'manage:all';
 
 export const PERMISSIONS_KEY = 'permissions';
-export const RequirePermissions = (...permissions: Permission[]) => SetMetadata(PERMISSIONS_KEY, permissions); 
+export const Permissions = (...permissions: Permission[]) => SetMetadata(PERMISSIONS_KEY, permissions);
