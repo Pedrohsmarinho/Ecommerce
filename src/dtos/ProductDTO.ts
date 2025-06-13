@@ -25,3 +25,10 @@ export const updateProductSchema = z.object({
 
 export type CreateProductDTO = z.infer<typeof createProductSchema>['body'];
 export type UpdateProductDTO = z.infer<typeof updateProductSchema>['body'];
+
+export class FilterProductDto {
+  name?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  available?: boolean;
+}

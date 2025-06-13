@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateProductDTO, UpdateProductDTO } from '../dtos/ProductDTO';
+import { CreateProductDTO, UpdateProductDTO, FilterProductDto } from '../dtos/ProductDTO';
 import { UserType } from '@prisma/client';
 
 @Injectable()
@@ -73,6 +73,40 @@ export class ProductService {
 
     return this.prisma.product.delete({
       where: { id },
+    });
+  }
+
+  async findWithFilters(filters: FilterProductDto) {
+    const where: any = {};
+
+    if (filters.name) {
+      where.name = {
+        contains: filters.name,
+        mode: 'insensitive',
+      };
+    }
+
+    if (filters.minPrice !== undefined || filters.maxPrice !== undefined) {
+      where.price = {};
+
+      if (filters.minPrice !== undefined) {
+        where.price.gte = filters.minPrice;
+      }
+
+      if (filters.maxPrice !== undefined) {
+        where.price.lte = filters.maxPrice;
+      }
+    }
+
+    if (filters.available !== undefined) {
+      where.stock = filters.available ? { gt: 0 } : { lte: 0 };
+    }
+
+    return this.prisma.product.findMany({
+      where,
+      include: {
+        category: true,
+      },
     });
   }
 }
