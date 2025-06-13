@@ -5,6 +5,7 @@ import { UserModule } from './user/user.module';
 import { ProductModule } from './product/product.module';
 import { PrismaService } from './prisma/prisma.service';
 import { ClientModule } from './client/client.module';
+import { CategoryModule } from './category/category.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { ClientModule } from './client/client.module';
     UserModule,
     ProductModule,
     ClientModule,
+    CategoryModule,
   ],
   providers: [PrismaService],
 })

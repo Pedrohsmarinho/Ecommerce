@@ -14,32 +14,26 @@ export class ProductService {
         description: createProductDto.description,
         price: createProductDto.price,
         stock: createProductDto.stock,
-        categoryId: createProductDto.categoryId
+        category: {
+          connect: {
+            id: createProductDto.categoryId
+          }
+        }
       },
-      include: {
-        category: true
-      }
     });
   }
 
   async findAll() {
-    return this.prisma.product.findMany({
-      include: {
-        category: true
-      }
-    });
+    return this.prisma.product.findMany();
   }
 
   async findOne(id: string) {
     const product = await this.prisma.product.findUnique({
       where: { id },
-      include: {
-        category: true
-      }
     });
 
     if (!product) {
-      throw new NotFoundException('Product not found');
+      throw new NotFoundException(`Product with ID ${id} not found`);
     }
 
     return product;
@@ -48,13 +42,10 @@ export class ProductService {
   async update(id: string, updateProductDto: UpdateProductDTO, userType: UserType) {
     const product = await this.prisma.product.findUnique({
       where: { id },
-      include: {
-        category: true
-      }
     });
 
     if (!product) {
-      throw new NotFoundException('Product not found');
+      throw new NotFoundException(`Product with ID ${id} not found`);
     }
 
     if (userType !== UserType.ADMIN) {
@@ -63,37 +54,25 @@ export class ProductService {
 
     return this.prisma.product.update({
       where: { id },
-      data: {
-        name: updateProductDto.name,
-        description: updateProductDto.description,
-        price: updateProductDto.price,
-        stock: updateProductDto.stock,
-        categoryId: updateProductDto.categoryId
-      },
-      include: {
-        category: true
-      }
+      data: updateProductDto,
     });
   }
 
-  async delete(id: string, userType: UserType) {
+  async remove(id: string, userType: UserType) {
     const product = await this.prisma.product.findUnique({
       where: { id },
-      include: {
-        category: true
-      }
     });
 
     if (!product) {
-      throw new NotFoundException('Product not found');
+      throw new NotFoundException(`Product with ID ${id} not found`);
     }
 
     if (userType !== UserType.ADMIN) {
       throw new ForbiddenException('Only admins can delete products');
     }
 
-    await this.prisma.product.delete({
-      where: { id }
+    return this.prisma.product.delete({
+      where: { id },
     });
   }
 }
