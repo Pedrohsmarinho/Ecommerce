@@ -12,7 +12,13 @@ const rolePermissions: Record<UserType, Permission[]> = {
     'manage:users',
     'manage:orders',
     'view:orders',
-    'manage:categories'
+    'manage:categories',
+    'manage:clients',
+    'create:user',
+    'update:user',
+    'delete:user',
+    'view:users',
+    'manage:all'
   ],
   CLIENT: [
     'read:product',
@@ -39,13 +45,12 @@ export class PermissionsGuard implements CanActivate {
       return false;
     }
 
-    // Verifica se o usuário tem o role ADMIN
-    const isAdmin = user.roles === 'ADMIN';
-    if (isAdmin) {
-      return true; // ADMIN tem todas as permissões
+    // Admin has unrestricted access to everything
+    if (user.type === UserType.ADMIN) {
+      return true;
     }
 
-    // Para outros roles, verifica as permissões específicas
+    // For other roles, check specific permissions
     const userRole = user.type;
     const userPermissions = rolePermissions[userRole] || [];
 

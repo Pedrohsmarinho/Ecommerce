@@ -2,9 +2,11 @@ import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards, Request } f
 import { ProductService } from './product.service';
 import { CreateProductDTO, UpdateProductDTO } from '../dtos/ProductDTO';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { PermissionsGuard } from '../auth/guards/permissions.guard';
-import { RequirePermissions } from '../auth/decorators/permissions.decorator';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { Permissions } from '../auth/decorators/permissions.decorator';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { UserType } from '@prisma/client';
 
 @ApiTags('products')
 @Controller('products')
@@ -12,8 +14,9 @@ export class ProductController {
   constructor(private readonly productService: ProductService) {}
 
   @Post()
-  @UseGuards(JwtAuthGuard, PermissionsGuard)
-  @RequirePermissions('create:product')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserType.ADMIN)
+  @Permissions('create:product')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Create a new product' })
   @ApiResponse({ status: 201, description: 'Product created successfully' })
@@ -22,8 +25,8 @@ export class ProductController {
   }
 
   @Get()
-  @UseGuards(JwtAuthGuard, PermissionsGuard)
-  @RequirePermissions('read:product')
+  @UseGuards(JwtAuthGuard)
+  @Permissions('read:product')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get all products' })
   @ApiResponse({ status: 200, description: 'Return all products' })
@@ -32,8 +35,8 @@ export class ProductController {
   }
 
   @Get(':id')
-  @UseGuards(JwtAuthGuard, PermissionsGuard)
-  @RequirePermissions('read:product')
+  @UseGuards(JwtAuthGuard)
+  @Permissions('read:product')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get a product by id' })
   @ApiResponse({ status: 200, description: 'Return the product' })
@@ -42,8 +45,9 @@ export class ProductController {
   }
 
   @Put(':id')
-  @UseGuards(JwtAuthGuard, PermissionsGuard)
-  @RequirePermissions('update:product')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserType.ADMIN)
+  @Permissions('update:product')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Update a product' })
   @ApiResponse({ status: 200, description: 'Product updated successfully' })
@@ -56,8 +60,9 @@ export class ProductController {
   }
 
   @Delete(':id')
-  @UseGuards(JwtAuthGuard, PermissionsGuard)
-  @RequirePermissions('delete:product')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserType.ADMIN)
+  @Permissions('delete:product')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Delete a product' })
   @ApiResponse({ status: 204, description: 'Product deleted successfully' })

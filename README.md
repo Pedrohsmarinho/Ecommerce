@@ -21,6 +21,87 @@ A comprehensive ecommerce API built with NestJS, TypeScript, Prisma, and Postgre
 - Environment variable configuration
 - Granular permission system
 
+### 👑 Admin Access Control
+The system implements a comprehensive admin access control system that provides unrestricted access to all features:
+
+#### Admin Capabilities
+- **User Management**
+  - Create new user accounts
+  - View all users
+  - Update user information
+  - Delete users
+  - Manage user roles and permissions
+
+- **Client Management**
+  - Create new clients
+  - View all clients
+  - Update client information
+  - Delete clients
+  - Link clients to users
+
+- **Product Management**
+  - Create products
+  - Update products
+  - Delete products
+  - Manage product categories
+  - Manage product stock
+
+- **Order Management**
+  - View all orders
+  - Update order status
+  - Manage order details
+  - Process orders
+
+#### Admin Endpoints
+```http
+# User Management
+GET /users - List all users
+GET /users/:id - Get specific user
+PATCH /users/:id - Update user
+DELETE /users/:id - Delete user
+
+# Client Management
+POST /clients - Create client
+GET /clients - List all clients
+GET /clients/:id - Get specific client
+PATCH /clients/:id - Update client
+DELETE /clients/:id - Delete client
+
+# Product Management
+POST /products - Create product
+GET /products - List all products
+GET /products/:id - Get specific product
+PATCH /products/:id - Update product
+DELETE /products/:id - Delete product
+
+# Order Management
+GET /orders - List all orders
+GET /orders/:id - Get specific order
+PATCH /orders/:id - Update order status
+```
+
+#### Access Control Implementation
+- All admin endpoints are protected by:
+  1. JWT Authentication (`JwtAuthGuard`)
+  2. Role-based access control (`RolesGuard`)
+  3. Permission-based access control (`PermissionsGuard`)
+
+- Admin users automatically have all permissions:
+  - `create:product`
+  - `read:product`
+  - `update:product`
+  - `delete:product`
+  - `manage:users`
+  - `manage:orders`
+  - `view:orders`
+  - `manage:categories`
+  - `manage:clients`
+  - `create:user`
+  - `update:user`
+  - `delete:user`
+  - `view:users`
+  - `manage:all`
+
 ## 📋 API Endpoints
 
 ### Authentication Routes (`/auth`)
