@@ -18,10 +18,6 @@ export class RolesGuard implements CanActivate {
     }
 
     const { user } = context.switchToHttp().getRequest();
-    console.log('User in guard:', user); // Debug log
-    console.log('Required roles:', requiredRoles); // Debug log
-    console.log('User type:', user?.type); // Debug log
-    console.log('Is allowed:', requiredRoles.some((role) => user?.type === role)); // Debug log
 
     return requiredRoles.some((role) => user?.type === role);
   }
