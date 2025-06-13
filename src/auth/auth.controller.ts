@@ -32,6 +32,8 @@ export class AuthController {
       registerDto.password,
       registerDto.name,
       registerDto.type,
+      registerDto.contact,
+      registerDto.address
     );
   }
 

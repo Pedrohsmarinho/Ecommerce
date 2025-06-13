@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, UseGuards, Request, Delete, Patch, Param } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards, Request, Delete, Patch, Param, Put } from '@nestjs/common';
 import { UserService } from './user.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -8,12 +8,21 @@ import { EmailVerificationDto } from './dto/email-verification.dto';
 import { ResendVerificationDto } from './dto/resend-verification.dto';
 import { UserType } from '@prisma/client';
 import { Permissions } from '../auth/decorators/permissions.decorator';
+import { UpdateProfileDTO } from './dto/update-profile.dto';
+import { CreateUserDTO } from './dto/create-user.dto';
 
 @ApiTags('users')
 @ApiBearerAuth()
 @Controller('users')
 export class UserController {
   constructor(private readonly userService: UserService) {}
+
+  @Post()
+  @ApiOperation({ summary: 'Create a new user' })
+  @ApiResponse({ status: 201, description: 'User created successfully' })
+  async create(@Body() createUserDto: CreateUserDTO) {
+    return this.userService.create(createUserDto);
+  }
 
   @Get('me')
   @UseGuards(JwtAuthGuard)
@@ -75,5 +84,23 @@ export class UserController {
   @ApiResponse({ status: 200, description: 'User updated successfully' })
   async update(@Param('id') id: string, @Body() updateUserDto: any) {
     return this.userService.update(id, updateUserDto);
+  }
+
+  @Put('profile')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserType.CLIENT)
+  @ApiOperation({ summary: 'Update client profile' })
+  @ApiResponse({ status: 200, description: 'Profile updated successfully' })
+  async updateProfile(@Request() req, @Body() updateProfileDto: UpdateProfileDTO) {
+    return this.userService.updateProfile(req.user.id, updateProfileDto);
+  }
+
+  @Post('client-profile')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserType.CLIENT)
+  @ApiOperation({ summary: 'Create client profile for existing CLIENT user' })
+  @ApiResponse({ status: 201, description: 'Client profile created successfully' })
+  async createClientProfile(@Request() req, @Body() updateProfileDto: UpdateProfileDTO) {
+    return this.userService.createClientProfile(req.user.id, updateProfileDto);
   }
 }
