@@ -23,7 +23,11 @@ export class AuthService {
   }
 
   async login(user: Omit<User, 'password'>) {
-    const payload = { email: user.email, sub: user.id, roles: user.type };
+    const payload = {
+      email: user.email,
+      sub: user.id,
+      type: user.type  // Mudando de roles para type
+    };
 
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(payload, {
@@ -86,9 +90,11 @@ export class AuthService {
     });
   }
 
-  async register(email: string, password: string, name: string, type: UserType) {
+  async register(email: string, password: string, name: string, type: UserType, contact?: string, address?: string) {
     const hashedPassword = await bcrypt.hash(password, 10);
-    const token = generateVerificationToken();
+
+    // Generate verification token
+    const token = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
     const expires = new Date();
     expires.setHours(expires.getHours() + 24);
 
@@ -98,14 +104,56 @@ export class AuthService {
         password: hashedPassword,
         name,
         type,
-        emailVerified: false,
         emailVerifyToken: token,
         emailVerifyTokenExpires: expires,
       },
     });
 
+    // If user is CLIENT type, create client profile
+    if (type === UserType.CLIENT) {
+      await this.prisma.client.create({
+        data: {
+          userId: user.id,
+          fullName: name,
+          contact: contact || '',
+          address: address || '',
+        },
+      });
+    }
+
+    // Send verification email
     await sendVerificationEmail(email, token);
 
-    return user;
+    // Generate tokens
+    const payload = {
+      email: user.email,
+      sub: user.id,
+      type: user.type
+    };
+
+    const [accessToken, refreshToken] = await Promise.all([
+      this.jwtService.signAsync(payload, {
+        expiresIn: '15m',
+      }),
+      this.jwtService.signAsync(payload, {
+        expiresIn: '7d',
+      }),
+    ]);
+
+    // Store refresh token in database
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: { refreshToken },
+    });
+
+    return {
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        type: user.type,
+        emailVerifyToken: user.emailVerifyToken,
+      },
+    };
   }
 }
