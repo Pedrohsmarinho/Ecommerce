@@ -38,6 +38,7 @@ model Client {
 
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   orders     Order[]
+  cart       Cart[]
 }
 
 model Product {
@@ -51,6 +52,7 @@ model Product {
   category    Category        @relation(fields: [categoryId], references: [id])
   categoryId  String
   orderItems  OrderItem[]
+  cart        Cart[]
 }
 
 model Order {
@@ -96,6 +98,9 @@ model Cart {
   quantity   Int
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
+
+  client     Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  product    Product  @relation(fields: [productId], references: [id])
 
   @@unique([clientId, productId])
 }

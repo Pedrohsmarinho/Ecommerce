@@ -530,6 +530,305 @@ async function cancelOrder(orderId: string) {
 }
 ```
 
+### Cart Endpoints
+
+The shopping cart system allows clients to manage their shopping cart items. All endpoints require authentication and client role.
+
+#### POST `/cart` 🔒
+Add an item to the cart.
+
+**Headers:**
+```
+Authorization: Bearer <your-jwt-token>
+```
+
+**Request Body:**
+```json
+{
+  "productId": "123e4567-e89b-12d3-a456-426614174000",
+  "quantity": 2
+}
+```
+
+**Success Response (201):**
+```json
+{
+  "id": "cart-item-uuid",
+  "clientId": "client-uuid",
+  "productId": "product-uuid",
+  "quantity": 2,
+  "product": {
+    "id": "product-uuid",
+    "name": "Product Name",
+    "price": "99.99",
+    "stock": 10
+  },
+  "created_at": "2024-03-20T10:00:00.000Z",
+  "updated_at": "2024-03-20T10:00:00.000Z"
+}
+```
+
+#### PUT `/cart/:id` 🔒
+Update cart item quantity.
+
+**Headers:**
+```
+Authorization: Bearer <your-jwt-token>
+```
+
+**Request Body:**
+```json
+{
+  "quantity": 3
+}
+```
+
+**Success Response (200):**
+```json
+{
+  "id": "cart-item-uuid",
+  "clientId": "client-uuid",
+  "productId": "product-uuid",
+  "quantity": 3,
+  "product": {
+    "id": "product-uuid",
+    "name": "Product Name",
+    "price": "99.99",
+    "stock": 10
+  },
+  "created_at": "2024-03-20T10:00:00.000Z",
+  "updated_at": "2024-03-20T10:00:00.000Z"
+}
+```
+
+#### DELETE `/cart/:id` 🔒
+Remove an item from the cart.
+
+**Headers:**
+```
+Authorization: Bearer <your-jwt-token>
+```
+
+**Success Response (200):**
+```json
+{
+  "id": "cart-item-uuid",
+  "clientId": "client-uuid",
+  "productId": "product-uuid",
+  "quantity": 2,
+  "created_at": "2024-03-20T10:00:00.000Z",
+  "updated_at": "2024-03-20T10:00:00.000Z"
+}
+```
+
+#### GET `/cart` 🔒
+Get cart contents.
+
+**Headers:**
+```
+Authorization: Bearer <your-jwt-token>
+```
+
+**Success Response (200):**
+```json
+[
+  {
+    "id": "cart-item-uuid",
+    "clientId": "client-uuid",
+    "productId": "product-uuid",
+    "quantity": 2,
+    "product": {
+      "id": "product-uuid",
+      "name": "Product Name",
+      "price": "99.99",
+      "stock": 10
+    },
+    "created_at": "2024-03-20T10:00:00.000Z",
+    "updated_at": "2024-03-20T10:00:00.000Z"
+  }
+]
+```
+
+#### GET `/cart/total` 🔒
+Get cart total.
+
+**Headers:**
+```
+Authorization: Bearer <your-jwt-token>
+```
+
+**Success Response (200):**
+```json
+{
+  "total": "199.98"
+}
+```
+
+#### DELETE `/cart` 🔒
+Clear cart.
+
+**Headers:**
+```
+Authorization: Bearer <your-jwt-token>
+```
+
+**Success Response (200):**
+```json
+{
+  "count": 1
+}
+```
+
+### Exemplo de Uso com cURL
+
+1. Adicionar item ao carrinho:
+```bash
+curl -X POST http://localhost:3000/cart \
+  -H "Authorization: Bearer seu-token-jwt" \
+  -H "Content-Type: application/json" \
+  -d '{"productId": "123e4567-e89b-12d3-a456-426614174000", "quantity": 2}'
+```
+
+2. Atualizar quantidade:
+```bash
+curl -X PUT http://localhost:3000/cart/cart-item-uuid \
+  -H "Authorization: Bearer seu-token-jwt" \
+  -H "Content-Type: application/json" \
+  -d '{"quantity": 3}'
+```
+
+3. Remover item:
+```bash
+curl -X DELETE http://localhost:3000/cart/cart-item-uuid \
+  -H "Authorization: Bearer seu-token-jwt"
+```
+
+4. Ver carrinho:
+```bash
+curl -X GET http://localhost:3000/cart \
+  -H "Authorization: Bearer seu-token-jwt"
+```
+
+5. Ver total:
+```bash
+curl -X GET http://localhost:3000/cart/total \
+  -H "Authorization: Bearer seu-token-jwt"
+```
+
+6. Limpar carrinho:
+```bash
+curl -X DELETE http://localhost:3000/cart \
+  -H "Authorization: Bearer seu-token-jwt"
+```
+
+### Exemplo de Uso com JavaScript/TypeScript
+
+```typescript
+// Configuração do cliente HTTP
+const API_URL = 'http://localhost:3000';
+let token = '';
+
+// Funções do carrinho
+async function addToCart(productId: string, quantity: number) {
+  const response = await fetch(`${API_URL}/cart`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ productId, quantity }),
+  });
+  return response.json();
+}
+
+async function updateCartItem(cartItemId: string, quantity: number) {
+  const response = await fetch(`${API_URL}/cart/${cartItemId}`, {
+    method: 'PUT',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ quantity }),
+  });
+  return response.json();
+}
+
+async function removeFromCart(cartItemId: string) {
+  const response = await fetch(`${API_URL}/cart/${cartItemId}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+  return response.json();
+}
+
+async function getCart() {
+  const response = await fetch(`${API_URL}/cart`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+  return response.json();
+}
+
+async function getCartTotal() {
+  const response = await fetch(`${API_URL}/cart/total`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+  return response.json();
+}
+
+async function clearCart() {
+  const response = await fetch(`${API_URL}/cart`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+  return response.json();
+}
+
+// Exemplo de uso
+async function shoppingCartExample() {
+  try {
+    // 1. Adicionar produtos ao carrinho
+    await addToCart('product-uuid-1', 2);
+    await addToCart('product-uuid-2', 1);
+    console.log('Produtos adicionados ao carrinho');
+
+    // 2. Ver carrinho
+    const cart = await getCart();
+    console.log('Carrinho:', cart);
+
+    // 3. Ver total
+    const total = await getCartTotal();
+    console.log('Total:', total);
+
+    // 4. Atualizar quantidade
+    if (cart.length > 0) {
+      await updateCartItem(cart[0].id, 3);
+      console.log('Quantidade atualizada');
+    }
+
+    // 5. Remover item
+    if (cart.length > 0) {
+      await removeFromCart(cart[0].id);
+      console.log('Item removido');
+    }
+
+    // 6. Limpar carrinho
+    await clearCart();
+    console.log('Carrinho limpo');
+
+  } catch (error) {
+    console.error('Erro:', error);
+  }
+}
+```
+
 ## 🛠️ Setup Instructions
 
 ### 1. Environment Configuration
