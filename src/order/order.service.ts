@@ -2,6 +2,7 @@ import { Injectable, NotFoundException, BadRequestException } from '@nestjs/comm
 import { PrismaService } from '../prisma/prisma.service';
 import { OrderStatus } from '@prisma/client';
 import { CreateOrderDto } from '../dtos/order.dto';
+import { PaymentStatus } from '../dtos/payment.dto';
 
 @Injectable()
 export class OrderService {
@@ -195,6 +196,79 @@ export class OrderService {
           },
         },
       },
+    });
+  }
+
+  async confirmPayment(orderId: string, paymentStatus: PaymentStatus) {
+    return this.prisma.$transaction(async (prisma) => {
+      const order = await prisma.order.findUnique({
+        where: { id: orderId },
+        include: {
+          items: {
+            include: {
+              product: true,
+            },
+          },
+        },
+      });
+
+      if (!order) {
+        throw new NotFoundException(`Order with ID ${orderId} not found`);
+      }
+
+      if (order.status !== OrderStatus.RECEIVED) {
+        throw new BadRequestException(`Order is not in RECEIVED status. Current status: ${order.status}`);
+      }
+
+      if (paymentStatus === PaymentStatus.CONFIRMED) {
+        // Reduce stock for each item
+        for (const item of order.items) {
+          await prisma.product.update({
+            where: { id: item.productId },
+            data: {
+              stock: {
+                decrement: item.quantity,
+              },
+            },
+          });
+        }
+
+        // Update order status to IN_PREPARATION
+        return prisma.order.update({
+          where: { id: orderId },
+          data: { status: OrderStatus.IN_PREPARATION },
+          include: {
+            items: {
+              include: {
+                product: true,
+              },
+            },
+            client: {
+              include: {
+                user: true,
+              },
+            },
+          },
+        });
+      } else {
+        // If payment is declined, cancel the order
+        return prisma.order.update({
+          where: { id: orderId },
+          data: { status: OrderStatus.CANCELLED },
+          include: {
+            items: {
+              include: {
+                product: true,
+              },
+            },
+            client: {
+              include: {
+                user: true,
+              },
+            },
+          },
+        });
+      }
     });
   }
 }

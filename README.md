@@ -451,30 +451,113 @@ Authorization: Bearer <your-jwt-token>
 - 401 Unauthorized: Invalid or missing token
 - 403 Forbidden: User is not an admin
 
+### Payment Confirmation
+
+#### POST `/orders/:id/payment` 🔒
+Confirm or decline payment for an order. This endpoint will:
+- If payment is confirmed: Reduce stock and update order status to IN_PREPARATION
+- If payment is declined: Update order status to CANCELLED
+
+**Headers:**
+```
+Authorization: Bearer <your-jwt-token>
+```
+
+**Request Body:**
+```json
+{
+  "status": "CONFIRMED"  // or "DECLINED"
+}
+```
+
+**Success Response (200) - Payment Confirmed:**
+```json
+{
+  "id": "order-uuid",
+  "status": "IN_PREPARATION",
+  "orderDate": "2024-03-20T10:00:00.000Z",
+  "total": "150.00",
+  "items": [
+    {
+      "id": "item-uuid",
+      "productId": "product-uuid",
+      "quantity": 2,
+      "unitPrice": "75.00",
+      "subtotal": "150.00",
+      "product": {
+        "id": "product-uuid",
+        "name": "Product Name",
+        "price": "75.00",
+        "stock": 8  // Stock reduced by 2
+      }
+    }
+  ],
+  "client": {
+    "id": "client-uuid",
+    "fullName": "John Doe",
+    "user": {
+      "id": "user-uuid",
+      "email": "john@example.com"
+    }
+  }
+}
+```
+
+**Success Response (200) - Payment Declined:**
+```json
+{
+  "id": "order-uuid",
+  "status": "CANCELLED",
+  "orderDate": "2024-03-20T10:00:00.000Z",
+  "total": "150.00",
+  "items": [
+    {
+      "id": "item-uuid",
+      "productId": "product-uuid",
+      "quantity": 2,
+      "unitPrice": "75.00",
+      "subtotal": "150.00",
+      "product": {
+        "id": "product-uuid",
+        "name": "Product Name",
+        "price": "75.00",
+        "stock": 10  // Stock remains unchanged
+      }
+    }
+  ],
+  "client": {
+    "id": "client-uuid",
+    "fullName": "John Doe",
+    "user": {
+      "id": "user-uuid",
+      "email": "john@example.com"
+    }
+  }
+}
+```
+
+**Error Responses:**
+- 404 Not Found: Order not found
+- 400 Bad Request: Order is not in RECEIVED status
+- 401 Unauthorized: Invalid or missing token
+- 403 Forbidden: User is not an admin
+
 ### Exemplo de Uso com cURL
 
-1. Confirmar pedido:
+1. Confirmar pagamento:
 ```bash
-curl -X POST http://localhost:3000/orders/order-uuid/confirm \
-  -H "Authorization: Bearer seu-token-jwt"
+curl -X POST http://localhost:3000/orders/order-uuid/payment \
+  -H "Authorization: Bearer seu-token-jwt" \
+  -H "Content-Type: application/json" \
+  -d '{"status": "CONFIRMED"}'
 ```
 
-2. Marcar como despachado:
+2. Recusar pagamento:
 ```bash
-curl -X POST http://localhost:3000/orders/order-uuid/dispatch \
-  -H "Authorization: Bearer seu-token-jwt"
-```
-
-3. Marcar como entregue:
-```bash
-curl -X POST http://localhost:3000/orders/order-uuid/deliver \
-  -H "Authorization: Bearer seu-token-jwt"
-```
-
-4. Cancelar pedido:
-```bash
-curl -X POST http://localhost:3000/orders/order-uuid/cancel \
-  -H "Authorization: Bearer seu-token-jwt"
+curl -X POST http://localhost:3000/orders/order-uuid/payment \
+  -H "Authorization: Bearer seu-token-jwt" \
+  -H "Content-Type: application/json" \
+  -d '{"status": "DECLINED"}'
 ```
 
 ### Exemplo de Uso com JavaScript/TypeScript
@@ -484,48 +567,32 @@ curl -X POST http://localhost:3000/orders/order-uuid/cancel \
 const API_URL = 'http://localhost:3000';
 let token = '';
 
-// Função para atualizar status do pedido
-async function updateOrderStatus(orderId: string, action: 'confirm' | 'dispatch' | 'deliver' | 'cancel') {
-  const response = await fetch(`${API_URL}/orders/${orderId}/${action}`, {
+// Função para confirmar ou recusar pagamento
+async function processPayment(orderId: string, status: 'CONFIRMED' | 'DECLINED') {
+  const response = await fetch(`${API_URL}/orders/${orderId}/payment`, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
     },
+    body: JSON.stringify({ status }),
   });
   return response.json();
 }
 
 // Exemplo de uso
-async function processOrder(orderId: string) {
+async function paymentExample() {
   try {
-    // 1. Confirmar pedido
-    await updateOrderStatus(orderId, 'confirm');
-    console.log('Pedido confirmado');
+    // 1. Confirmar pagamento
+    const confirmedOrder = await processPayment('order-uuid', 'CONFIRMED');
+    console.log('Pagamento confirmado:', confirmedOrder);
 
-    // 2. Marcar como despachado
-    await updateOrderStatus(orderId, 'dispatch');
-    console.log('Pedido despachado');
-
-    // 3. Marcar como entregue
-    await updateOrderStatus(orderId, 'deliver');
-    console.log('Pedido entregue');
+    // 2. Recusar pagamento
+    const declinedOrder = await processPayment('order-uuid', 'DECLINED');
+    console.log('Pagamento recusado:', declinedOrder);
 
   } catch (error) {
-    if (error.message.includes('Invalid status transition')) {
-      console.error('Transição de status inválida');
-    } else {
-      console.error('Erro:', error);
-    }
-  }
-}
-
-// Exemplo de cancelamento
-async function cancelOrder(orderId: string) {
-  try {
-    await updateOrderStatus(orderId, 'cancel');
-    console.log('Pedido cancelado e estoque restaurado');
-  } catch (error) {
-    console.error('Erro ao cancelar pedido:', error);
+    console.error('Erro:', error);
   }
 }
 ```
@@ -723,7 +790,7 @@ curl -X DELETE http://localhost:3000/cart \
 
 ### Exemplo de Uso com JavaScript/TypeScript
 
-```typescript
+```typitten
 // Configuração do cliente HTTP
 const API_URL = 'http://localhost:3000';
 let token = '';

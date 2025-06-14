@@ -6,6 +6,7 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { UserType } from '@prisma/client';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { CreateOrderDto } from '../dtos/order.dto';
+import { PaymentConfirmationDto } from '../dtos/payment.dto';
 
 @ApiTags('orders')
 @ApiBearerAuth()
@@ -62,6 +63,19 @@ export class OrderController {
   @ApiResponse({ status: 400, description: 'Invalid status transition' })
   cancelOrder(@Param('id') id: string) {
     return this.orderService.cancelOrder(id);
+  }
+
+  @Post(':id/payment')
+  @Roles(UserType.ADMIN)
+  @ApiOperation({ summary: 'Confirm or decline payment for an order' })
+  @ApiResponse({ status: 200, description: 'Payment processed successfully' })
+  @ApiResponse({ status: 400, description: 'Invalid order status or payment status' })
+  @ApiResponse({ status: 404, description: 'Order not found' })
+  async confirmPayment(
+    @Param('id') id: string,
+    @Body() paymentConfirmationDto: PaymentConfirmationDto,
+  ) {
+    return this.orderService.confirmPayment(id, paymentConfirmationDto.status);
   }
 
   @Get()
