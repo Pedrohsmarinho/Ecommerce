@@ -9,6 +9,7 @@ import { CategoryModule } from './category/category.module';
 import { OrderModule } from './order/order.module';
 import { CartModule } from './cart/cart.module';
 import { ReportModule } from './report/report.module';
+import { HealthModule } from './health/health.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { ReportModule } from './report/report.module';
     OrderModule,
     CartModule,
     ReportModule,
+    HealthModule,
   ],
   providers: [PrismaService],
 })

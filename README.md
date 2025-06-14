@@ -542,32 +542,32 @@ Authorization: Bearer <your-jwt-token>
 - 401 Unauthorized: Invalid or missing token
 - 403 Forbidden: User is not an admin
 
-### Exemplo de Uso com cURL
+### Usage Example with cURL
 
-1. Confirmar pagamento:
+1. Confirm payment:
 ```bash
 curl -X POST http://localhost:3000/orders/order-uuid/payment \
-  -H "Authorization: Bearer seu-token-jwt" \
+  -H "Authorization: Bearer your-jwt-token" \
   -H "Content-Type: application/json" \
   -d '{"status": "CONFIRMED"}'
 ```
 
-2. Recusar pagamento:
+2. Decline payment:
 ```bash
 curl -X POST http://localhost:3000/orders/order-uuid/payment \
-  -H "Authorization: Bearer seu-token-jwt" \
+  -H "Authorization: Bearer your-jwt-token" \
   -H "Content-Type: application/json" \
   -d '{"status": "DECLINED"}'
 ```
 
-### Exemplo de Uso com JavaScript/TypeScript
+### Usage Example with JavaScript/TypeScript
 
 ```typescript
-// Configuração do cliente HTTP
+// HTTP client configuration
 const API_URL = 'http://localhost:3000';
 let token = '';
 
-// Função para confirmar ou recusar pagamento
+// Function to confirm or decline payment
 async function processPayment(orderId: string, status: 'CONFIRMED' | 'DECLINED') {
   const response = await fetch(`${API_URL}/orders/${orderId}/payment`, {
     method: 'POST',
@@ -580,19 +580,19 @@ async function processPayment(orderId: string, status: 'CONFIRMED' | 'DECLINED')
   return response.json();
 }
 
-// Exemplo de uso
+// Usage example
 async function paymentExample() {
   try {
-    // 1. Confirmar pagamento
+    // 1. Confirm payment
     const confirmedOrder = await processPayment('order-uuid', 'CONFIRMED');
-    console.log('Pagamento confirmado:', confirmedOrder);
+    console.log('Payment confirmed:', confirmedOrder);
 
-    // 2. Recusar pagamento
+    // 2. Decline payment
     const declinedOrder = await processPayment('order-uuid', 'DECLINED');
-    console.log('Pagamento recusado:', declinedOrder);
+    console.log('Payment declined:', declinedOrder);
 
   } catch (error) {
-    console.error('Erro:', error);
+    console.error('Error:', error);
   }
 }
 ```
@@ -746,156 +746,6 @@ Authorization: Bearer <your-jwt-token>
 }
 ```
 
-### Exemplo de Uso com cURL
-
-1. Adicionar item ao carrinho:
-```bash
-curl -X POST http://localhost:3000/cart \
-  -H "Authorization: Bearer seu-token-jwt" \
-  -H "Content-Type: application/json" \
-  -d '{"productId": "123e4567-e89b-12d3-a456-426614174000", "quantity": 2}'
-```
-
-2. Atualizar quantidade:
-```bash
-curl -X PUT http://localhost:3000/cart/cart-item-uuid \
-  -H "Authorization: Bearer seu-token-jwt" \
-  -H "Content-Type: application/json" \
-  -d '{"quantity": 3}'
-```
-
-3. Remover item:
-```bash
-curl -X DELETE http://localhost:3000/cart/cart-item-uuid \
-  -H "Authorization: Bearer seu-token-jwt"
-```
-
-4. Ver carrinho:
-```bash
-curl -X GET http://localhost:3000/cart \
-  -H "Authorization: Bearer seu-token-jwt"
-```
-
-5. Ver total:
-```bash
-curl -X GET http://localhost:3000/cart/total \
-  -H "Authorization: Bearer seu-token-jwt"
-```
-
-6. Limpar carrinho:
-```bash
-curl -X DELETE http://localhost:3000/cart \
-  -H "Authorization: Bearer seu-token-jwt"
-```
-
-### Exemplo de Uso com JavaScript/TypeScript
-
-```typitten
-// Configuração do cliente HTTP
-const API_URL = 'http://localhost:3000';
-let token = '';
-
-// Funções do carrinho
-async function addToCart(productId: string, quantity: number) {
-  const response = await fetch(`${API_URL}/cart`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ productId, quantity }),
-  });
-  return response.json();
-}
-
-async function updateCartItem(cartItemId: string, quantity: number) {
-  const response = await fetch(`${API_URL}/cart/${cartItemId}`, {
-    method: 'PUT',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ quantity }),
-  });
-  return response.json();
-}
-
-async function removeFromCart(cartItemId: string) {
-  const response = await fetch(`${API_URL}/cart/${cartItemId}`, {
-    method: 'DELETE',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-    },
-  });
-  return response.json();
-}
-
-async function getCart() {
-  const response = await fetch(`${API_URL}/cart`, {
-    headers: {
-      'Authorization': `Bearer ${token}`,
-    },
-  });
-  return response.json();
-}
-
-async function getCartTotal() {
-  const response = await fetch(`${API_URL}/cart/total`, {
-    headers: {
-      'Authorization': `Bearer ${token}`,
-    },
-  });
-  return response.json();
-}
-
-async function clearCart() {
-  const response = await fetch(`${API_URL}/cart`, {
-    method: 'DELETE',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-    },
-  });
-  return response.json();
-}
-
-// Exemplo de uso
-async function shoppingCartExample() {
-  try {
-    // 1. Adicionar produtos ao carrinho
-    await addToCart('product-uuid-1', 2);
-    await addToCart('product-uuid-2', 1);
-    console.log('Produtos adicionados ao carrinho');
-
-    // 2. Ver carrinho
-    const cart = await getCart();
-    console.log('Carrinho:', cart);
-
-    // 3. Ver total
-    const total = await getCartTotal();
-    console.log('Total:', total);
-
-    // 4. Atualizar quantidade
-    if (cart.length > 0) {
-      await updateCartItem(cart[0].id, 3);
-      console.log('Quantidade atualizada');
-    }
-
-    // 5. Remover item
-    if (cart.length > 0) {
-      await removeFromCart(cart[0].id);
-      console.log('Item removido');
-    }
-
-    // 6. Limpar carrinho
-    await clearCart();
-    console.log('Carrinho limpo');
-
-  } catch (error) {
-    console.error('Erro:', error);
-  }
-}
-```
-
 ### Sales Reports
 
 #### POST `/reports` 🔒
@@ -1003,12 +853,12 @@ Authorization: Bearer <your-jwt-token>
 - 403 Forbidden: User is not an admin
 - 404 Not Found: Report not found
 
-### Exemplo de Uso com cURL
+### Usage Example with cURL
 
-1. Gerar relatório:
+1. Generate report:
 ```bash
 curl -X POST http://localhost:3000/reports \
-  -H "Authorization: Bearer seu-token-jwt" \
+  -H "Authorization: Bearer your-jwt-token" \
   -H "Content-Type: application/json" \
   -d '{
     "startDate": "2024-01-01",
@@ -1018,26 +868,26 @@ curl -X POST http://localhost:3000/reports \
   }'
 ```
 
-2. Listar relatórios:
+2. List reports:
 ```bash
 curl -X GET http://localhost:3000/reports \
-  -H "Authorization: Bearer seu-token-jwt"
+  -H "Authorization: Bearer your-jwt-token"
 ```
 
-3. Obter detalhes de um relatório:
+3. Get report details:
 ```bash
 curl -X GET http://localhost:3000/reports/report-uuid \
-  -H "Authorization: Bearer seu-token-jwt"
+  -H "Authorization: Bearer your-jwt-token"
 ```
 
-### Exemplo de Uso com JavaScript/TypeScript
+### Usage Example with JavaScript/TypeScript
 
 ```typescript
-// Configuração do cliente HTTP
+// HTTP client configuration
 const API_URL = 'http://localhost:3000';
 let token = '';
 
-// Função para gerar relatório
+// Function to generate report
 async function generateReport(startDate: string, endDate: string, filters = {}) {
   const response = await fetch(`${API_URL}/reports`, {
     method: 'POST',
@@ -1054,7 +904,7 @@ async function generateReport(startDate: string, endDate: string, filters = {}) 
   return response.json();
 }
 
-// Função para listar relatórios
+// Function to list reports
 async function listReports() {
   const response = await fetch(`${API_URL}/reports`, {
     headers: {
@@ -1064,7 +914,7 @@ async function listReports() {
   return response.json();
 }
 
-// Função para obter detalhes de um relatório
+// Function to get report details
 async function getReport(id: string) {
   const response = await fetch(`${API_URL}/reports/${id}`, {
     headers: {
@@ -1074,26 +924,26 @@ async function getReport(id: string) {
   return response.json();
 }
 
-// Exemplo de uso
+// Usage example
 async function reportExample() {
   try {
-    // 1. Gerar relatório
+    // 1. Generate report
     const report = await generateReport('2024-01-01', '2024-03-20', {
       productName: 'Product Name',
       clientType: 'CLIENT'
     });
-    console.log('Relatório gerado:', report);
+    console.log('Report generated:', report);
 
-    // 2. Listar relatórios
+    // 2. List reports
     const reports = await listReports();
-    console.log('Lista de relatórios:', reports);
+    console.log('Reports list:', reports);
 
-    // 3. Obter detalhes de um relatório
+    // 3. Get report details
     const reportDetails = await getReport(report.report.id);
-    console.log('Detalhes do relatório:', reportDetails);
+    console.log('Report details:', reportDetails);
 
   } catch (error) {
-    console.error('Erro:', error);
+    console.error('Error:', error);
   }
 }
 ```
@@ -1234,28 +1084,154 @@ curl -X GET http://localhost:3000/products \
 
 **Status**: ✅ **Complete Authentication System Ready for Production Use**
 
-## Rotas da API
+## API Routes
 
-### Autenticação (`/auth`)
-- `POST /auth/login` - Login de usuário
-- `POST /auth/register` - Registro de novo usuário
+### Authentication (`/auth`)
+- `POST /auth/login` - User login
+- `POST /auth/register` - New user registration
 
-### Usuários (`/users`)
-- `GET /users/me` - Obter perfil do usuário logado (requer autenticação)
-- `POST /users/verify-email` - Verificar email do usuário
-- `POST /users/resend-verification` - Reenviar email de verificação
-- `GET /users` - Listar todos os usuários (requer autenticação e role ADMIN)
-- `GET /users/:id` - Obter usuário por ID (requer autenticação e role ADMIN)
+### Users (`/users`)
+- `GET /users/me` - Get logged user profile (requires authentication)
+- `POST /users/verify-email` - Verify user email
+- `POST /users/resend-verification` - Resend verification email
+- `GET /users` - List all users (requires authentication and ADMIN role)
+- `GET /users/:id` - Get user by ID (requires authentication and ADMIN role)
 
-## Documentação
-A documentação completa da API está disponível em `/api` quando o servidor estiver rodando.
+### Products (`/products`)
+- `GET /products` - List all products
+- `GET /products/:id` - Get product by ID
+- `POST /products` - Create new product (requires authentication and ADMIN role)
+- `PUT /products/:id` - Update product (requires authentication and ADMIN role)
+- `DELETE /products/:id` - Delete product (requires authentication and ADMIN role)
 
-## Autenticação
-Todas as rotas protegidas requerem um token JWT no header:
+### Orders (`/orders`)
+- `GET /orders` - List all orders (requires authentication)
+- `GET /orders/:id` - Get order by ID (requires authentication)
+- `POST /orders` - Create new order (requires authentication)
+- `PUT /orders/:id` - Update order status (requires authentication and ADMIN role)
+
+### Cart (`/cart`)
+- `GET /cart` - Get cart contents (requires authentication)
+- `POST /cart` - Add item to cart (requires authentication)
+- `PUT /cart/:id` - Update cart item quantity (requires authentication)
+- `DELETE /cart/:id` - Remove item from cart (requires authentication)
+- `DELETE /cart` - Clear cart (requires authentication)
+
+### Reports (`/reports`)
+- `GET /reports` - List all reports (requires authentication and ADMIN role)
+- `GET /reports/:id` - Get report by ID (requires authentication and ADMIN role)
+- `POST /reports` - Generate new report (requires authentication and ADMIN role)
+
+## Documentation
+
+### Authentication (`/auth`)
+- `POST /auth/login` - User login
+- `POST /auth/register` - New user registration
+
+### Users (`/users`)
+- `GET /users/me` - Get logged user profile (requires authentication)
+- `POST /users/verify-email` - Verify user email
+- `POST /users/resend-verification` - Resend verification email
+- `GET /users` - List all users (requires authentication and ADMIN role)
+- `GET /users/:id` - Get user by ID (requires authentication and ADMIN role)
+
+### Products (`/products`)
+- `GET /products` - List all products
+- `GET /products/:id` - Get product by ID
+- `POST /products` - Create new product (requires authentication and ADMIN role)
+- `PUT /products/:id` - Update product (requires authentication and ADMIN role)
+- `DELETE /products/:id` - Delete product (requires authentication and ADMIN role)
+
+### Orders (`/orders`)
+- `GET /orders` - List all orders (requires authentication)
+- `GET /orders/:id` - Get order by ID (requires authentication)
+- `POST /orders` - Create new order (requires authentication)
+- `PUT /orders/:id` - Update order status (requires authentication and ADMIN role)
+
+### Cart (`/cart`)
+- `GET /cart` - Get cart contents (requires authentication)
+- `POST /cart` - Add item to cart (requires authentication)
+- `PUT /cart/:id` - Update cart item quantity (requires authentication)
+- `DELETE /cart/:id` - Remove item from cart (requires authentication)
+- `DELETE /cart` - Clear cart (requires authentication)
+
+### Reports (`/reports`)
+- `GET /reports` - List all reports (requires authentication and ADMIN role)
+- `GET /reports/:id` - Get report by ID (requires authentication and ADMIN role)
+- `POST /reports` - Generate new report (requires authentication and ADMIN role)
+
+## Authentication
+
+The API uses JWT (JSON Web Token) for authentication. To access protected endpoints, you need to:
+
+1. Register a new user or login with existing credentials
+2. Get the JWT token from the response
+3. Include the token in the Authorization header for subsequent requests
+
+### Example:
+
+```bash
+# Login
+curl -X POST http://localhost:3000/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email": "user@example.com", "password": "password123"}'
+
+# Use the token
+curl -X GET http://localhost:3000/users/me \
+  -H "Authorization: Bearer your-jwt-token"
 ```
-Authorization: Bearer <seu-token>
+
+## Error Handling
+
+The API uses standard HTTP status codes and returns error messages in the following format:
+
+```json
+{
+  "statusCode": 400,
+  "message": "Error message",
+  "error": "Bad Request"
+}
 ```
 
-## Roles
-- `ADMIN`: Acesso total ao sistema
-- `CLIENT`: Acesso limitado às próprias informações
+Common error codes:
+- 400: Bad Request - Invalid input data
+- 401: Unauthorized - Missing or invalid authentication
+- 403: Forbidden - Insufficient permissions
+- 404: Not Found - Resource not found
+- 500: Internal Server Error - Server-side error
+
+## Rate Limiting
+
+The API implements rate limiting to prevent abuse. The current limits are:
+- 100 requests per minute for authenticated users
+- 20 requests per minute for unauthenticated users
+
+## CORS
+
+The API is configured to accept requests from the following origins:
+- http://localhost:3000
+- http://localhost:3001
+- https://your-production-domain.com
+
+## Security
+
+The API implements several security measures:
+- Password hashing with bcrypt
+- JWT token-based authentication
+- Rate limiting
+- CORS protection
+- Input validation
+- SQL injection prevention
+- XSS protection
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

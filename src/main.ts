@@ -2,15 +2,33 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { ErrorInterceptor } from './interceptors/error.interceptor';
+import { CacheInterceptor } from './interceptors/cache.interceptor';
+import { RateLimitGuard } from './guards/rate-limit.guard';
+import { ConfigService } from '@nestjs/config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  const configService = app.get(ConfigService);
 
   // Enable CORS
   app.enableCors();
 
-  // Enable validation
-  app.useGlobalPipes(new ValidationPipe());
+  // Global pipes
+  app.useGlobalPipes(new ValidationPipe({
+    transform: true,
+    whitelist: true,
+    forbidNonWhitelisted: true,
+  }));
+
+  // Global interceptors
+  app.useGlobalInterceptors(
+    new ErrorInterceptor(),
+    new CacheInterceptor(configService),
+  );
+
+  // Global guards
+  app.useGlobalGuards(new RateLimitGuard(configService));
 
   // Swagger setup
   const config = new DocumentBuilder()
