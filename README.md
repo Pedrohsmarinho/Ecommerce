@@ -21,6 +21,29 @@ A comprehensive ecommerce API built with NestJS, TypeScript, Prisma, and Postgre
 - Environment variable configuration
 - Granular permission system
 
+### 📊 Report Generation with S3 Integration
+- **Sales Reports** generation in CSV format
+- **AWS S3 Integration** for file storage
+- **Signed URLs** for secure file access
+- **Report Metadata** storage in database
+- **Filtering Options** by date range, product name, and client type
+- **Automatic Cleanup** of temporary files
+
+#### Report Features
+- Generate detailed sales reports
+- Store reports securely in S3
+- Access reports via signed URLs
+- Track report metadata in database
+- Filter reports by various criteria
+- Automatic file cleanup
+
+#### S3 Integration
+- Secure file storage in AWS S3
+- Configurable bucket and region
+- Signed URL generation for file access
+- Automatic file cleanup
+- Environment-based configuration
+
 ### 👑 Admin Access Control
 The system implements a comprehensive admin access control system that provides unrestricted access to all features:
 
@@ -746,10 +769,10 @@ Authorization: Bearer <your-jwt-token>
 }
 ```
 
-### Sales Reports
+### Reports (`/reports`)
 
 #### POST `/reports` 🔒
-Generate a new sales report with detailed product sales data. The report will be saved as a CSV file and its metadata will be stored in the database.
+Generate a new sales report with detailed product sales data. The report will be saved in S3 and its metadata will be stored in the database.
 
 **Headers:**
 ```
@@ -775,7 +798,7 @@ Authorization: Bearer <your-jwt-token>
     "startDate": "2024-01-01T00:00:00.000Z",
     "endDate": "2024-03-20T23:59:59.999Z",
     "fileName": "sales_report_1234567890.csv",
-    "filePath": "/path/to/reports/sales_report_1234567890.csv",
+    "filePath": "reports/sales_report_1234567890.csv",
     "totalSales": "15000.00",
     "totalOrders": 150,
     "filters": {
@@ -789,12 +812,13 @@ Authorization: Bearer <your-jwt-token>
     "totalOrders": 150,
     "totalRevenue": "15000.00",
     "productCount": 25
-  }
+  },
+  "fileUrl": "https://your-bucket.s3.amazonaws.com/reports/sales_report_1234567890.csv?X-Amz-Algorithm=..."
 }
 ```
 
 #### GET `/reports` 🔒
-List all generated reports.
+List all generated reports with their signed URLs.
 
 **Headers:**
 ```
@@ -810,19 +834,20 @@ Authorization: Bearer <your-jwt-token>
     "startDate": "2024-01-01T00:00:00.000Z",
     "endDate": "2024-03-20T23:59:59.999Z",
     "fileName": "sales_report_1234567890.csv",
-    "filePath": "/path/to/reports/sales_report_1234567890.csv",
+    "filePath": "reports/sales_report_1234567890.csv",
     "totalSales": "15000.00",
     "totalOrders": 150,
     "filters": {
       "startDate": "2024-01-01",
       "endDate": "2024-03-20"
-    }
+    },
+    "fileUrl": "https://your-bucket.s3.amazonaws.com/reports/sales_report_1234567890.csv?X-Amz-Algorithm=..."
   }
 ]
 ```
 
 #### GET `/reports/:id` 🔒
-Get details of a specific report.
+Get details of a specific report with a fresh signed URL.
 
 **Headers:**
 ```
@@ -837,114 +862,14 @@ Authorization: Bearer <your-jwt-token>
   "startDate": "2024-01-01T00:00:00.000Z",
   "endDate": "2024-03-20T23:59:59.999Z",
   "fileName": "sales_report_1234567890.csv",
-  "filePath": "/path/to/reports/sales_report_1234567890.csv",
+  "filePath": "reports/sales_report_1234567890.csv",
   "totalSales": "15000.00",
   "totalOrders": 150,
   "filters": {
     "startDate": "2024-01-01",
     "endDate": "2024-03-20"
-  }
-}
-```
-
-**Error Responses:**
-- 400 Bad Request: Invalid date range or filters
-- 401 Unauthorized: Invalid or missing token
-- 403 Forbidden: User is not an admin
-- 404 Not Found: Report not found
-
-### Usage Example with cURL
-
-1. Generate report:
-```bash
-curl -X POST http://localhost:3000/reports \
-  -H "Authorization: Bearer your-jwt-token" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "startDate": "2024-01-01",
-    "endDate": "2024-03-20",
-    "productName": "Product Name",
-    "clientType": "CLIENT"
-  }'
-```
-
-2. List reports:
-```bash
-curl -X GET http://localhost:3000/reports \
-  -H "Authorization: Bearer your-jwt-token"
-```
-
-3. Get report details:
-```bash
-curl -X GET http://localhost:3000/reports/report-uuid \
-  -H "Authorization: Bearer your-jwt-token"
-```
-
-### Usage Example with JavaScript/TypeScript
-
-```typescript
-// HTTP client configuration
-const API_URL = 'http://localhost:3000';
-let token = '';
-
-// Function to generate report
-async function generateReport(startDate: string, endDate: string, filters = {}) {
-  const response = await fetch(`${API_URL}/reports`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      startDate,
-      endDate,
-      ...filters
-    }),
-  });
-  return response.json();
-}
-
-// Function to list reports
-async function listReports() {
-  const response = await fetch(`${API_URL}/reports`, {
-    headers: {
-      'Authorization': `Bearer ${token}`,
-    },
-  });
-  return response.json();
-}
-
-// Function to get report details
-async function getReport(id: string) {
-  const response = await fetch(`${API_URL}/reports/${id}`, {
-    headers: {
-      'Authorization': `Bearer ${token}`,
-    },
-  });
-  return response.json();
-}
-
-// Usage example
-async function reportExample() {
-  try {
-    // 1. Generate report
-    const report = await generateReport('2024-01-01', '2024-03-20', {
-      productName: 'Product Name',
-      clientType: 'CLIENT'
-    });
-    console.log('Report generated:', report);
-
-    // 2. List reports
-    const reports = await listReports();
-    console.log('Reports list:', reports);
-
-    // 3. Get report details
-    const reportDetails = await getReport(report.report.id);
-    console.log('Report details:', reportDetails);
-
-  } catch (error) {
-    console.error('Error:', error);
-  }
+  },
+  "fileUrl": "https://your-bucket.s3.amazonaws.com/reports/sales_report_1234567890.csv?X-Amz-Algorithm=..."
 }
 ```
 
@@ -962,6 +887,12 @@ JWT_SECRET="your-super-secret-jwt-key-replace-with-secure-random-string"
 
 # Server Configuration
 PORT=3000
+
+# AWS S3 Configuration
+AWS_REGION="us-east-1"
+AWS_ACCESS_KEY_ID="your-access-key-id"
+AWS_SECRET_ACCESS_KEY="your-secret-access-key"
+AWS_S3_BUCKET="your-bucket-name"
 ```
 
 ### 2. Install Dependencies
@@ -976,17 +907,21 @@ npx prisma generate
 
 # Run database migrations
 npx prisma migrate dev
-
-# (Optional) Seed the database
-npx prisma db seed
 ```
 
-### 4. Start the Server
+### 4. AWS S3 Setup
+1. Create an AWS account if you don't have one
+2. Create an S3 bucket for storing reports
+3. Create an IAM user with S3 access
+4. Get the access key ID and secret access key
+5. Update the `.env` file with your AWS credentials
+
+### 5. Start the Application
 ```bash
-# Development mode
+# Development
 npm run start:dev
 
-# Production mode
+# Production
 npm run build
 npm run start:prod
 ```

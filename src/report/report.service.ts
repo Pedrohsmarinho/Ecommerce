@@ -2,9 +2,12 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { GenerateReportDto } from '../dtos/report.dto';
 import { createObjectCsvWriter } from 'csv-writer';
-import * as path from 'path';
-import * as fs from 'fs';
 import { Prisma } from '@prisma/client';
+import { S3Service } from '../s3/s3.service';
+import { Readable } from 'stream';
+import * as fs from 'fs';
+import * as path from 'path';
+import * as os from 'os';
 
 interface SalesData {
   product_id: string;
@@ -22,18 +25,15 @@ interface Totals {
 
 @Injectable()
 export class ReportService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private s3Service: S3Service
+  ) {}
 
   async generateReport(dto: GenerateReportDto, userId: string) {
-    // Create reports directory if it doesn't exist
-    const reportsDir = path.join(process.cwd(), 'reports');
-    if (!fs.existsSync(reportsDir)) {
-      fs.mkdirSync(reportsDir);
-    }
-
     // Generate unique filename
     const fileName = `sales_report_${Date.now()}.csv`;
-    const filePath = path.join(reportsDir, fileName);
+    const s3Key = `reports/${fileName}`;
 
     // Build the SQL query with aggregations
     const salesData = await this.prisma.$queryRaw<SalesData[]>`
@@ -78,9 +78,12 @@ export class ReportService {
         ${dto.clientType ? Prisma.sql`AND u.type = ${dto.clientType}` : Prisma.sql``}
     `;
 
+    // Create temporary file path
+    const tempFilePath = path.join(os.tmpdir(), fileName);
+
     // Create CSV file
     const csvWriter = createObjectCsvWriter({
-      path: filePath,
+      path: tempFilePath,
       header: [
         { id: 'product_id', title: 'Product ID' },
         { id: 'product_name', title: 'Product Name' },
@@ -93,13 +96,32 @@ export class ReportService {
 
     await csvWriter.writeRecords(salesData);
 
+    // Read the file and upload to S3
+    const fileBuffer = fs.readFileSync(tempFilePath);
+
+    // Upload to S3
+    await this.s3Service.uploadFile(
+      {
+        buffer: fileBuffer,
+        mimetype: 'text/csv',
+        originalname: fileName
+      },
+      s3Key
+    );
+
+    // Clean up temporary file
+    fs.unlinkSync(tempFilePath);
+
+    // Get signed URL for the file
+    const fileUrl = await this.s3Service.getSignedUrl(s3Key);
+
     // Create report record in database
     const report = await this.prisma.report.create({
       data: {
         startDate: new Date(dto.startDate),
         endDate: new Date(dto.endDate),
         fileName,
-        filePath,
+        filePath: s3Key, // Store S3 key instead of local path
         totalSales: totals[0].total_revenue || 0,
         totalOrders: Number(totals[0].total_orders) || 0,
         filters: dto as unknown as Prisma.JsonValue,
@@ -113,19 +135,38 @@ export class ReportService {
         totalOrders: Number(totals[0].total_orders) || 0,
         totalRevenue: totals[0].total_revenue || 0,
         productCount: salesData.length
-      }
+      },
+      fileUrl // Include the signed URL in the response
     };
   }
 
   async getReport(id: string) {
-    return this.prisma.report.findUnique({
+    const report = await this.prisma.report.findUnique({
       where: { id }
     });
+
+    if (report) {
+      // Get a fresh signed URL for the file
+      const fileUrl = await this.s3Service.getSignedUrl(report.filePath);
+      return { ...report, fileUrl };
+    }
+
+    return report;
   }
 
   async listReports() {
-    return this.prisma.report.findMany({
+    const reports = await this.prisma.report.findMany({
       orderBy: { createdAt: 'desc' }
     });
+
+    // Get signed URLs for all reports
+    const reportsWithUrls = await Promise.all(
+      reports.map(async (report) => {
+        const fileUrl = await this.s3Service.getSignedUrl(report.filePath);
+        return { ...report, fileUrl };
+      })
+    );
+
+    return reportsWithUrls;
   }
 }
