@@ -176,6 +176,360 @@ Update a product. Requires `update:product` permission.
 #### DELETE `/products/:id` 🔒
 Delete a product. Requires `delete:product` permission.
 
+### Order Routes (`/orders`)
+
+#### POST `/orders` 🔒
+Create a new order. Requires ADMIN role.
+
+**Headers:**
+```
+Authorization: Bearer <your-jwt-token>
+```
+
+**Request Body:**
+```json
+{
+  "clientId": "123e4567-e89b-12d3-a456-426614174000",
+  "items": [
+    {
+      "productId": "123e4567-e89b-12d3-a456-426614174001",
+      "quantity": 2
+    },
+    {
+      "productId": "123e4567-e89b-12d3-a456-426614174002",
+      "quantity": 1
+    }
+  ]
+}
+```
+
+**Success Response (201):**
+```json
+{
+  "id": "123e4567-e89b-12d3-a456-426614174003",
+  "clientId": "123e4567-e89b-12d3-a456-426614174000",
+  "status": "RECEIVED",
+  "orderDate": "2024-03-20T10:00:00.000Z",
+  "total": "150.00",
+  "items": [
+    {
+      "id": "123e4567-e89b-12d3-a456-426614174004",
+      "quantity": 2,
+      "unitPrice": "50.00",
+      "subtotal": "100.00",
+      "product": {
+        "id": "123e4567-e89b-12d3-a456-426614174001",
+        "name": "Product 1",
+        "description": "Description 1",
+        "price": "50.00",
+        "stock": 8
+      }
+    },
+    {
+      "id": "123e4567-e89b-12d3-a456-426614174005",
+      "quantity": 1,
+      "unitPrice": "50.00",
+      "subtotal": "50.00",
+      "product": {
+        "id": "123e4567-e89b-12d3-a456-426614174002",
+        "name": "Product 2",
+        "description": "Description 2",
+        "price": "50.00",
+        "stock": 9
+      }
+    }
+  ],
+  "client": {
+    "id": "123e4567-e89b-12d3-a456-426614174000",
+    "fullName": "John Doe",
+    "contact": "11999999999",
+    "address": "Rua Exemplo, 123",
+    "user": {
+      "id": "123e4567-e89b-12d3-a456-426614174006",
+      "name": "John Doe",
+      "email": "john@example.com",
+      "type": "CLIENT"
+    }
+  }
+}
+```
+
+**Error Responses:**
+- 400 Bad Request: Invalid input or insufficient stock
+- 404 Not Found: Client or product not found
+- 401 Unauthorized: Invalid or missing token
+- 403 Forbidden: User is not an admin
+
+#### GET `/orders` 🔒
+Get all orders. Requires ADMIN role.
+
+**Headers:**
+```
+Authorization: Bearer <your-jwt-token>
+```
+
+**Success Response (200):**
+```json
+[
+  {
+    "id": "order-uuid",
+    "clientId": "client-uuid",
+    "status": "IN_PREPARATION",
+    "orderDate": "2024-03-20T10:00:00.000Z",
+    "total": "150.00",
+    "created_at": "2024-03-20T10:00:00.000Z",
+    "updated_at": "2024-03-20T10:00:00.000Z",
+    "items": [
+      {
+        "id": "item-uuid",
+        "quantity": 2,
+        "unitPrice": "50.00",
+        "subtotal": "100.00",
+        "product": {
+          "id": "product-uuid",
+          "name": "Product Name",
+          "description": "Product Description",
+          "price": "50.00",
+          "stock": 8
+        }
+      }
+    ],
+    "client": {
+      "id": "client-uuid",
+      "fullName": "John Doe",
+      "contact": "11999999999",
+      "address": "Rua Exemplo, 123",
+      "user": {
+        "id": "user-uuid",
+        "name": "John Doe",
+        "email": "john@example.com",
+        "type": "CLIENT"
+      }
+    }
+  }
+]
+```
+
+#### GET `/orders/:id` 🔒
+Get a specific order. Requires ADMIN role.
+
+**Headers:**
+```
+Authorization: Bearer <your-jwt-token>
+```
+
+**Success Response (200):**
+```json
+{
+  "id": "order-uuid",
+  "clientId": "client-uuid",
+  "status": "IN_PREPARATION",
+  "orderDate": "2024-03-20T10:00:00.000Z",
+  "total": "150.00",
+  "created_at": "2024-03-20T10:00:00.000Z",
+  "updated_at": "2024-03-20T10:00:00.000Z",
+  "items": [
+    {
+      "id": "item-uuid",
+      "quantity": 2,
+      "unitPrice": "50.00",
+      "subtotal": "100.00",
+      "product": {
+        "id": "product-uuid",
+        "name": "Product Name",
+        "description": "Product Description",
+        "price": "50.00",
+        "stock": 8
+      }
+    }
+  ],
+  "client": {
+    "id": "client-uuid",
+    "fullName": "John Doe",
+    "contact": "11999999999",
+    "address": "Rua Exemplo, 123",
+    "user": {
+      "id": "user-uuid",
+      "name": "John Doe",
+      "email": "john@example.com",
+      "type": "CLIENT"
+    }
+  }
+}
+```
+
+### Order Status Management
+
+The system implements a state machine for order status with the following flow:
+
+```
+RECEIVED → IN_PREPARATION → DISPATCHED → DELIVERED
+     ↓           ↓              ↓
+     └───────────┴──────────────┘
+            CANCELLED
+```
+
+#### POST `/orders/:id/confirm` 🔒
+Confirm an order and start preparation. Changes status from RECEIVED to IN_PREPARATION.
+
+**Headers:**
+```
+Authorization: Bearer <your-jwt-token>
+```
+
+**Success Response (200):**
+```json
+{
+  "id": "order-uuid",
+  "status": "IN_PREPARATION",
+  "orderDate": "2024-03-20T10:00:00.000Z",
+  "total": "150.00",
+  "updated_at": "2024-03-20T10:00:00.000Z"
+}
+```
+
+#### POST `/orders/:id/dispatch` 🔒
+Mark order as dispatched. Changes status from IN_PREPARATION to DISPATCHED.
+
+**Headers:**
+```
+Authorization: Bearer <your-jwt-token>
+```
+
+**Success Response (200):**
+```json
+{
+  "id": "order-uuid",
+  "status": "DISPATCHED",
+  "orderDate": "2024-03-20T10:00:00.000Z",
+  "total": "150.00",
+  "updated_at": "2024-03-20T10:00:00.000Z"
+}
+```
+
+#### POST `/orders/:id/deliver` 🔒
+Mark order as delivered. Changes status from DISPATCHED to DELIVERED.
+
+**Headers:**
+```
+Authorization: Bearer <your-jwt-token>
+```
+
+**Success Response (200):**
+```json
+{
+  "id": "order-uuid",
+  "status": "DELIVERED",
+  "orderDate": "2024-03-20T10:00:00.000Z",
+  "total": "150.00",
+  "updated_at": "2024-03-20T10:00:00.000Z"
+}
+```
+
+#### POST `/orders/:id/cancel` 🔒
+Cancel an order and restore stock. Can be called from RECEIVED, IN_PREPARATION, or DISPATCHED status.
+
+**Headers:**
+```
+Authorization: Bearer <your-jwt-token>
+```
+
+**Success Response (200):**
+```json
+{
+  "id": "order-uuid",
+  "status": "CANCELLED",
+  "orderDate": "2024-03-20T10:00:00.000Z",
+  "total": "150.00",
+  "updated_at": "2024-03-20T10:00:00.000Z"
+}
+```
+
+**Error Responses for all status endpoints:**
+- 404 Not Found: Order not found
+- 400 Bad Request: Invalid status transition
+- 401 Unauthorized: Invalid or missing token
+- 403 Forbidden: User is not an admin
+
+### Exemplo de Uso com cURL
+
+1. Confirmar pedido:
+```bash
+curl -X POST http://localhost:3000/orders/order-uuid/confirm \
+  -H "Authorization: Bearer seu-token-jwt"
+```
+
+2. Marcar como despachado:
+```bash
+curl -X POST http://localhost:3000/orders/order-uuid/dispatch \
+  -H "Authorization: Bearer seu-token-jwt"
+```
+
+3. Marcar como entregue:
+```bash
+curl -X POST http://localhost:3000/orders/order-uuid/deliver \
+  -H "Authorization: Bearer seu-token-jwt"
+```
+
+4. Cancelar pedido:
+```bash
+curl -X POST http://localhost:3000/orders/order-uuid/cancel \
+  -H "Authorization: Bearer seu-token-jwt"
+```
+
+### Exemplo de Uso com JavaScript/TypeScript
+
+```typescript
+// Configuração do cliente HTTP
+const API_URL = 'http://localhost:3000';
+let token = '';
+
+// Função para atualizar status do pedido
+async function updateOrderStatus(orderId: string, action: 'confirm' | 'dispatch' | 'deliver' | 'cancel') {
+  const response = await fetch(`${API_URL}/orders/${orderId}/${action}`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+  return response.json();
+}
+
+// Exemplo de uso
+async function processOrder(orderId: string) {
+  try {
+    // 1. Confirmar pedido
+    await updateOrderStatus(orderId, 'confirm');
+    console.log('Pedido confirmado');
+
+    // 2. Marcar como despachado
+    await updateOrderStatus(orderId, 'dispatch');
+    console.log('Pedido despachado');
+
+    // 3. Marcar como entregue
+    await updateOrderStatus(orderId, 'deliver');
+    console.log('Pedido entregue');
+
+  } catch (error) {
+    if (error.message.includes('Invalid status transition')) {
+      console.error('Transição de status inválida');
+    } else {
+      console.error('Erro:', error);
+    }
+  }
+}
+
+// Exemplo de cancelamento
+async function cancelOrder(orderId: string) {
+  try {
+    await updateOrderStatus(orderId, 'cancel');
+    console.log('Pedido cancelado e estoque restaurado');
+  } catch (error) {
+    console.error('Erro ao cancelar pedido:', error);
+  }
+}
+```
+
 ## 🛠️ Setup Instructions
 
 ### 1. Environment Configuration
