@@ -8,6 +8,7 @@ import { ClientModule } from './client/client.module';
 import { CategoryModule } from './category/category.module';
 import { OrderModule } from './order/order.module';
 import { CartModule } from './cart/cart.module';
+import { ReportModule } from './report/report.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { CartModule } from './cart/cart.module';
     CategoryModule,
     OrderModule,
     CartModule,
+    ReportModule,
   ],
   providers: [PrismaService],
 })
