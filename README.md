@@ -896,6 +896,208 @@ async function shoppingCartExample() {
 }
 ```
 
+### Sales Reports
+
+#### POST `/reports` 🔒
+Generate a new sales report with detailed product sales data. The report will be saved as a CSV file and its metadata will be stored in the database.
+
+**Headers:**
+```
+Authorization: Bearer <your-jwt-token>
+```
+
+**Request Body:**
+```json
+{
+  "startDate": "2024-01-01",
+  "endDate": "2024-03-20",
+  "productName": "Optional product name filter",
+  "clientType": "Optional client type filter"
+}
+```
+
+**Success Response (201):**
+```json
+{
+  "report": {
+    "id": "report-uuid",
+    "createdAt": "2024-03-20T10:00:00.000Z",
+    "startDate": "2024-01-01T00:00:00.000Z",
+    "endDate": "2024-03-20T23:59:59.999Z",
+    "fileName": "sales_report_1234567890.csv",
+    "filePath": "/path/to/reports/sales_report_1234567890.csv",
+    "totalSales": "15000.00",
+    "totalOrders": 150,
+    "filters": {
+      "startDate": "2024-01-01",
+      "endDate": "2024-03-20",
+      "productName": "Optional product name filter",
+      "clientType": "Optional client type filter"
+    }
+  },
+  "summary": {
+    "totalOrders": 150,
+    "totalRevenue": "15000.00",
+    "productCount": 25
+  }
+}
+```
+
+#### GET `/reports` 🔒
+List all generated reports.
+
+**Headers:**
+```
+Authorization: Bearer <your-jwt-token>
+```
+
+**Success Response (200):**
+```json
+[
+  {
+    "id": "report-uuid",
+    "createdAt": "2024-03-20T10:00:00.000Z",
+    "startDate": "2024-01-01T00:00:00.000Z",
+    "endDate": "2024-03-20T23:59:59.999Z",
+    "fileName": "sales_report_1234567890.csv",
+    "filePath": "/path/to/reports/sales_report_1234567890.csv",
+    "totalSales": "15000.00",
+    "totalOrders": 150,
+    "filters": {
+      "startDate": "2024-01-01",
+      "endDate": "2024-03-20"
+    }
+  }
+]
+```
+
+#### GET `/reports/:id` 🔒
+Get details of a specific report.
+
+**Headers:**
+```
+Authorization: Bearer <your-jwt-token>
+```
+
+**Success Response (200):**
+```json
+{
+  "id": "report-uuid",
+  "createdAt": "2024-03-20T10:00:00.000Z",
+  "startDate": "2024-01-01T00:00:00.000Z",
+  "endDate": "2024-03-20T23:59:59.999Z",
+  "fileName": "sales_report_1234567890.csv",
+  "filePath": "/path/to/reports/sales_report_1234567890.csv",
+  "totalSales": "15000.00",
+  "totalOrders": 150,
+  "filters": {
+    "startDate": "2024-01-01",
+    "endDate": "2024-03-20"
+  }
+}
+```
+
+**Error Responses:**
+- 400 Bad Request: Invalid date range or filters
+- 401 Unauthorized: Invalid or missing token
+- 403 Forbidden: User is not an admin
+- 404 Not Found: Report not found
+
+### Exemplo de Uso com cURL
+
+1. Gerar relatório:
+```bash
+curl -X POST http://localhost:3000/reports \
+  -H "Authorization: Bearer seu-token-jwt" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "startDate": "2024-01-01",
+    "endDate": "2024-03-20",
+    "productName": "Product Name",
+    "clientType": "CLIENT"
+  }'
+```
+
+2. Listar relatórios:
+```bash
+curl -X GET http://localhost:3000/reports \
+  -H "Authorization: Bearer seu-token-jwt"
+```
+
+3. Obter detalhes de um relatório:
+```bash
+curl -X GET http://localhost:3000/reports/report-uuid \
+  -H "Authorization: Bearer seu-token-jwt"
+```
+
+### Exemplo de Uso com JavaScript/TypeScript
+
+```typescript
+// Configuração do cliente HTTP
+const API_URL = 'http://localhost:3000';
+let token = '';
+
+// Função para gerar relatório
+async function generateReport(startDate: string, endDate: string, filters = {}) {
+  const response = await fetch(`${API_URL}/reports`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      startDate,
+      endDate,
+      ...filters
+    }),
+  });
+  return response.json();
+}
+
+// Função para listar relatórios
+async function listReports() {
+  const response = await fetch(`${API_URL}/reports`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+  return response.json();
+}
+
+// Função para obter detalhes de um relatório
+async function getReport(id: string) {
+  const response = await fetch(`${API_URL}/reports/${id}`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+  return response.json();
+}
+
+// Exemplo de uso
+async function reportExample() {
+  try {
+    // 1. Gerar relatório
+    const report = await generateReport('2024-01-01', '2024-03-20', {
+      productName: 'Product Name',
+      clientType: 'CLIENT'
+    });
+    console.log('Relatório gerado:', report);
+
+    // 2. Listar relatórios
+    const reports = await listReports();
+    console.log('Lista de relatórios:', reports);
+
+    // 3. Obter detalhes de um relatório
+    const reportDetails = await getReport(report.report.id);
+    console.log('Detalhes do relatório:', reportDetails);
+
+  } catch (error) {
+    console.error('Erro:', error);
+  }
+}
+```
+
 ## 🛠️ Setup Instructions
 
 ### 1. Environment Configuration
