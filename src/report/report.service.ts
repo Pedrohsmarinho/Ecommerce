@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { S3Service } from '../s3/s3.service';
 import { GenerateReportDto } from '../dtos/report.dto';
 import { createObjectCsvWriter } from 'csv-writer';
 import * as path from 'path';
@@ -22,7 +23,10 @@ interface Totals {
 
 @Injectable()
 export class ReportService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private s3Service: S3Service,
+  ) {}
 
   async generateReport(dto: GenerateReportDto, userId: string) {
     // Create reports directory if it doesn't exist
@@ -93,19 +97,33 @@ export class ReportService {
 
     await csvWriter.writeRecords(salesData);
 
+    // Upload to S3
+    const fileContent = fs.readFileSync(filePath);
+    const s3Path = await this.s3Service.uploadFile(
+      {
+        buffer: fileContent,
+        mimetype: 'text/csv',
+        originalname: fileName,
+      },
+      `reports/${fileName}`
+    );
+
     // Create report record in database
     const report = await this.prisma.report.create({
       data: {
         startDate: new Date(dto.startDate),
         endDate: new Date(dto.endDate),
         fileName,
-        filePath,
+        filePath: s3Path,
         totalSales: totals[0].total_revenue || 0,
         totalOrders: Number(totals[0].total_orders) || 0,
         filters: dto as unknown as Prisma.JsonValue,
         userId
       }
     });
+
+    // Clean up local file
+    fs.unlinkSync(filePath);
 
     return {
       report,
@@ -118,14 +136,31 @@ export class ReportService {
   }
 
   async getReport(id: string) {
-    return this.prisma.report.findUnique({
+    const report = await this.prisma.report.findUnique({
       where: { id }
     });
+
+    if (report) {
+      const signedUrl = await this.s3Service.getSignedUrl(report.filePath);
+      return { ...report, fileUrl: signedUrl };
+    }
+
+    return report;
   }
 
   async listReports() {
-    return this.prisma.report.findMany({
+    const reports = await this.prisma.report.findMany({
       orderBy: { createdAt: 'desc' }
     });
+
+    // Get signed URLs for all reports
+    const reportsWithUrls = await Promise.all(
+      reports.map(async (report) => {
+        const signedUrl = await this.s3Service.getSignedUrl(report.filePath);
+        return { ...report, fileUrl: signedUrl };
+      })
+    );
+
+    return reportsWithUrls;
   }
 }
