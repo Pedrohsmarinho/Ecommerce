@@ -7,6 +7,7 @@ import { PrismaService } from './prisma/prisma.service';
 import { ClientModule } from './client/client.module';
 import { CategoryModule } from './category/category.module';
 import { OrderModule } from './order/order.module';
+import { CartModule } from './cart/cart.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { OrderModule } from './order/order.module';
     ClientModule,
     CategoryModule,
     OrderModule,
+    CartModule,
   ],
   providers: [PrismaService],
 })
