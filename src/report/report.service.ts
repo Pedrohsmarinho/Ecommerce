@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { S3Service } from '../s3/s3.service';
 import { GenerateReportDto } from '../dtos/report.dto';
 import { createObjectCsvWriter } from 'csv-writer';
 import { Prisma } from '@prisma/client';
-import { S3Service } from '../s3/s3.service';
 import { Readable } from 'stream';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -27,7 +27,7 @@ interface Totals {
 export class ReportService {
   constructor(
     private prisma: PrismaService,
-    private s3Service: S3Service
+    private s3Service: S3Service,
   ) {}
 
   async generateReport(dto: GenerateReportDto, userId: string) {
