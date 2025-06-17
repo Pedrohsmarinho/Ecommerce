@@ -129,7 +129,55 @@ docker-compose up --build
 
 ## 📚 API Documentation
 
-The API documentation is available through Swagger UI at `/api` endpoint when the application is running.
+The API documentation is available through Swagger UI at `/api` endpoint when the application is running. The documentation includes:
+
+### Features
+- Interactive API documentation
+- Request/response examples
+- Authentication requirements
+- Data models and schemas
+- API endpoints grouping by tags
+- Try-it-out functionality
+
+### Accessing the Documentation
+1. Start the application:
+```bash
+npm run start:dev
+```
+
+2. Open your browser and navigate to:
+```
+http://localhost:3000/api
+```
+
+### Documentation Structure
+- **Authentication**: JWT Bearer token authentication
+- **Endpoints**: Grouped by functionality (auth, users, products, orders, etc.)
+- **Models**: Complete data models with validation rules
+- **Responses**: HTTP status codes and response schemas
+
+### Example Usage
+1. **Authentication**
+   - Use the `/auth/login` endpoint to get a JWT token
+   - Click the "Authorize" button in Swagger UI
+   - Enter your token in the format: `Bearer your-token-here`
+
+2. **Making Requests**
+   - Select an endpoint
+   - Click "Try it out"
+   - Fill in the required parameters
+   - Execute the request
+   - View the response
+
+### Available Tags
+- `auth`: Authentication endpoints
+- `users`: User management
+- `products`: Product management
+- `orders`: Order management
+- `clients`: Client management
+- `categories`: Category management
+- `health`: Health check endpoints
+- `metrics`: Application metrics
 
 ## 🧪 Testing
 
@@ -686,7 +734,7 @@ Authorization: Bearer <your-jwt-token>
 }
 ```
 
-**Success Response (201):**
+**Success Response (201):**a
 ```json
 {
   "id": "cart-item-uuid",
@@ -918,6 +966,211 @@ Authorization: Bearer <your-jwt-token>
   "fileUrl": "https://your-bucket.s3.amazonaws.com/reports/sales_report_1234567890.csv?X-Amz-Algorithm=..."
 }
 ```
+
+## 🏗️ Architecture Decisions
+
+### Overview
+The project follows a modular architecture using NestJS framework, implementing several design patterns and architectural principles to ensure maintainability, scalability, and code quality.
+
+### Core Architecture
+
+#### 1. Modular Structure
+```
+src/
+├── auth/           # Authentication module
+├── user/           # User management
+├── product/        # Product management
+├── order/          # Order processing
+├── client/         # Client management
+├── category/       # Product categories
+├── cart/           # Shopping cart
+├── report/         # Report generation
+├── health/         # Health checks
+├── metrics/        # Application metrics
+├── s3/             # AWS S3 integration
+└── prisma/         # Database layer
+```
+
+#### 2. Design Patterns Implemented
+
+##### Repository Pattern
+- Used in PrismaService for database operations
+- Abstracts database access from business logic
+- Provides a consistent interface for data operations
+
+##### Strategy Pattern
+- Authentication strategies (JWT, Local)
+- Different strategies for different authentication methods
+- Easy to extend with new authentication methods
+
+##### Interceptor Pattern
+- Error handling (ErrorInterceptor)
+- Caching (CacheInterceptor)
+- Metrics collection (HttpMetricsInterceptor)
+- Request/Response transformation
+
+##### Guard Pattern
+- Authentication (JwtAuthGuard)
+- Role-based access (RolesGuard)
+- Rate limiting (RateLimitGuard)
+
+##### Factory Pattern
+- Service instantiation
+- Configuration objects creation
+
+### 3. SOLID Principles
+
+#### Single Responsibility Principle (SRP)
+- Each module has a single responsibility
+- Services are focused on specific business logic
+- Controllers handle only HTTP concerns
+
+#### Open/Closed Principle (OCP)
+- Extensible authentication strategies
+- Pluggable interceptors
+- Configurable guards
+
+#### Liskov Substitution Principle (LSP)
+- Consistent interfaces across implementations
+- Type-safe inheritance
+
+#### Interface Segregation Principle (ISP)
+- Focused interfaces for specific use cases
+- No client forced to depend on unused methods
+
+#### Dependency Inversion Principle (DIP)
+- Dependency injection throughout the application
+- High-level modules don't depend on low-level modules
+- Both depend on abstractions
+
+### 4. Security Architecture
+
+#### Authentication
+- JWT-based authentication
+- Token refresh mechanism
+- Secure password hashing with bcrypt
+
+#### Authorization
+- Role-based access control (RBAC)
+- Permission-based access control
+- Granular permissions system
+
+#### Data Protection
+- Input validation
+- Data sanitization
+- SQL injection prevention (Prisma)
+- XSS protection
+
+### 5. Data Flow
+
+```
+Client Request
+    ↓
+Rate Limiting
+    ↓
+Authentication
+    ↓
+Authorization
+    ↓
+Request Validation
+    ↓
+Business Logic
+    ↓
+Database Operations
+    ↓
+Response Transformation
+    ↓
+Client Response
+```
+
+### 6. Caching Strategy
+
+#### Redis Implementation
+- In-memory caching for frequently accessed data
+- Cache invalidation strategies
+- Distributed caching support
+
+#### Cache Levels
+1. Application-level caching
+2. Database query caching
+3. API response caching
+
+### 7. Error Handling
+
+#### Error Hierarchy
+```
+BaseError
+├── ValidationError
+├── AuthenticationError
+├── AuthorizationError
+├── BusinessLogicError
+└── SystemError
+```
+
+#### Error Response Format
+```json
+{
+  "statusCode": number,
+  "message": string,
+  "error": string,
+  "timestamp": string,
+  "path": string
+}
+```
+
+### 8. Testing Strategy
+
+#### Unit Tests
+- Service layer testing
+- Controller testing
+- Guard testing
+- Interceptor testing
+
+#### Integration Tests
+- API endpoint testing
+- Database integration
+- External service integration
+
+#### E2E Tests
+- Complete flow testing
+- User journey testing
+
+### 9. Performance Considerations
+
+#### Optimization Techniques
+- Database indexing
+- Query optimization
+- Caching strategies
+- Rate limiting
+- Connection pooling
+
+#### Monitoring
+- Health checks
+- Metrics collection
+- Performance monitoring
+- Error tracking
+
+### 10. Scalability
+
+#### Horizontal Scaling
+- Stateless architecture
+- Containerized deployment
+- Load balancing ready
+
+#### Vertical Scaling
+- Database optimization
+- Caching implementation
+- Resource management
+
+### 11. Future Considerations
+
+#### Planned Improvements
+1. Implement CQRS pattern for complex operations
+2. Add event-driven architecture for async operations
+3. Implement circuit breaker pattern
+4. Add more comprehensive logging
+5. Implement API versioning
+6. Add GraphQL support
 
 ## 🛠️ Setup Instructions
 
