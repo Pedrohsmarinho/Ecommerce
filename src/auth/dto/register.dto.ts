@@ -16,7 +16,7 @@ export class RegisterDto {
   @MinLength(6)
   password: string;
 
-  @ApiProperty({ enum: UserType, example: UserType.CLIENT })
+  @ApiProperty({ enum: UserType, example: 'CLIENT' })
   @IsEnum(UserType)
   type: UserType;
 
