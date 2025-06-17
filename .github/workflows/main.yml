@@ -23,7 +23,7 @@ jobs:
 
       - name: Upload project to EC2
         run: |
-          scp -i ~/.ssh/id_rsa -r ecommerce-api ec2-user@${{ secrets.HOST }}:/home/ec2-user/
+          scp -i ~/.ssh/id_rsa -r . ec2-user@${{ secrets.HOST }}:/home/ec2-user/ecommerce-api
 
       - name: Deploy via SSH
         run: |
