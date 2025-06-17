@@ -17,6 +17,12 @@ describe('AuthController', () => {
   };
 
   beforeEach(async () => {
+    // Limpa os mocks antes de cada teste
+    mockAuthService.login.mockReset();
+    mockAuthService.register.mockReset();
+    mockAuthService.refreshToken.mockReset();
+    mockAuthService.logout.mockReset();
+
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AuthController],
       providers: [
@@ -45,7 +51,8 @@ describe('AuthController', () => {
 
       mockAuthService.login.mockResolvedValue(mockResponse);
 
-      const result = await controller.login(loginDto);
+      // O controller espera req.user
+      const result = await controller.login({ user: loginDto });
 
       expect(result).toEqual(mockResponse);
       expect(authService.login).toHaveBeenCalledWith(loginDto);
@@ -75,7 +82,15 @@ describe('AuthController', () => {
       const result = await controller.register(registerDto);
 
       expect(result).toEqual(mockResponse);
-      expect(authService.register).toHaveBeenCalledWith(registerDto);
+      // O controller passa os campos individualmente
+      expect(authService.register).toHaveBeenCalledWith(
+        registerDto.email,
+        registerDto.password,
+        registerDto.name,
+        registerDto.type,
+        registerDto.contact,
+        registerDto.address
+      );
     });
   });
 
@@ -86,13 +101,14 @@ describe('AuthController', () => {
         access_token: 'new-access-token',
         refresh_token: 'new-refresh-token',
       };
-
+      // Mock do jwtService.decode
+      authService.jwtService = { decode: jest.fn().mockReturnValue({ sub: 'userId' }) } as any;
       mockAuthService.refreshToken.mockResolvedValue(mockResponse);
 
       const result = await controller.refreshToken({ refreshToken });
 
       expect(result).toEqual(mockResponse);
-      expect(authService.refreshToken).toHaveBeenCalledWith(refreshToken);
+      expect(authService.refreshToken).toHaveBeenCalledWith('userId', refreshToken);
     });
   });
 
@@ -103,7 +119,8 @@ describe('AuthController', () => {
 
       mockAuthService.logout.mockResolvedValue(mockResponse);
 
-      const result = await controller.logout(userId);
+      // O controller espera req.user.id
+      const result = await controller.logout({ user: { id: userId } });
 
       expect(result).toEqual(mockResponse);
       expect(authService.logout).toHaveBeenCalledWith(userId);
