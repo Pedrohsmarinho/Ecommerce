@@ -29,103 +29,149 @@ A comprehensive ecommerce API built with NestJS, TypeScript, Prisma, and Postgre
 - **Filtering Options** by date range, product name, and client type
 - **Automatic Cleanup** of temporary files
 
-#### Report Features
-- Generate detailed sales reports
-- Store reports securely in S3
-- Access reports via signed URLs
-- Track report metadata in database
-- Filter reports by various criteria
-- Automatic file cleanup
+### 🚀 Performance & Caching
+- **Redis Integration** for caching
+- **Health Checks** with @nestjs/terminus
+- **Metrics Collection** with prom-client
+- **Rate Limiting** for API endpoints
 
-#### S3 Integration
-- Secure file storage in AWS S3
-- Configurable bucket and region
-- Signed URL generation for file access
-- Automatic file cleanup
-- Environment-based configuration
+## 🛠️ Tech Stack
 
-### 👑 Admin Access Control
-The system implements a comprehensive admin access control system that provides unrestricted access to all features:
+- **Framework:** NestJS
+- **Language:** TypeScript
+- **Database:** PostgreSQL
+- **ORM:** Prisma
+- **Cache:** Redis
+- **Authentication:** JWT, Passport
+- **Storage:** AWS S3
+- **Testing:** Jest
+- **Documentation:** Swagger/OpenAPI
+- **Containerization:** Docker
 
-#### Admin Capabilities
-- **User Management**
-  - Create new user accounts
-  - View all users
-  - Update user information
-  - Delete users
-  - Manage user roles and permissions
+## 📋 Prerequisites
 
-- **Client Management**
-  - Create new clients
-  - View all clients
-  - Update client information
-  - Delete clients
-  - Link clients to users
+- Node.js (version specified in .nvmrc)
+- Docker and Docker Compose
+- PostgreSQL
+- Redis
+- AWS Account (for S3 integration)
 
-- **Product Management**
-  - Create products
-  - Update products
-  - Delete products
-  - Manage product categories
-  - Manage product stock
+## 🚀 Getting Started
 
-- **Order Management**
-  - View all orders
-  - Update order status
-  - Manage order details
-  - Process orders
-
-#### Admin Endpoints
-```http
-# User Management
-GET /users - List all users
-GET /users/:id - Get specific user
-PATCH /users/:id - Update user
-DELETE /users/:id - Delete user
-
-# Client Management
-POST /clients - Create client
-GET /clients - List all clients
-GET /clients/:id - Get specific client
-PATCH /clients/:id - Update client
-DELETE /clients/:id - Delete client
-
-# Product Management
-POST /products - Create product
-GET /products - List all products
-GET /products/:id - Get specific product
-PATCH /products/:id - Update product
-DELETE /products/:id - Delete product
-
-# Order Management
-GET /orders - List all orders
-GET /orders/:id - Get specific order
-PATCH /orders/:id - Update order status
+1. **Clone the repository**
+```bash
+git clone <repository-url>
+cd ecommerce
 ```
 
-#### Access Control Implementation
-- All admin endpoints are protected by:
-  1. JWT Authentication (`JwtAuthGuard`)
-  2. Role-based access control (`RolesGuard`)
-  3. Permission-based access control (`PermissionsGuard`)
+2. **Install dependencies**
+```bash
+npm install
+```
 
-- Admin users automatically have all permissions:
-  - `create:product`
-  - `read:product`
-  - `update:product`
-  - `delete:product`
-  - `manage:users`
-  - `manage:orders`
-  - `view:orders`
-  - `manage:categories`
-  - `manage:clients`
-  - `create:user`
-  - `update:user`
-  - `delete:user`
-  - `view:users`
-  - `manage:all`
+3. **Environment Setup**
+Create a `.env` file in the root directory with the following variables:
+```env
+# Database
+POSTGRES_USER=your_user
+POSTGRES_PASSWORD=your_password
+POSTGRES_DB=ecommerce
 
-## 📋 API Endpoints
+# JWT
+JWT_SECRET=your_jwt_secret
+JWT_EXPIRATION=1d
+
+# AWS S3
+AWS_ACCESS_KEY_ID=your_access_key
+AWS_SECRET_ACCESS_KEY=your_secret_key
+AWS_REGION=your_region
+AWS_BUCKET_NAME=your_bucket
+
+# Redis
+REDIS_HOST=localhost
+REDIS_PORT=6379
+```
+
+4. **Database Setup**
+```bash
+# Generate Prisma client
+npx prisma generate
+
+# Run migrations
+npx prisma migrate dev
+
+# Seed the database (optional)
+npm run prisma:seed
+```
+
+5. **Development**
+```bash
+# Start development server
+npm run start:dev
+
+# Run tests
+npm run test
+
+# Run tests with coverage
+npm run test:cov
+```
+
+## 🐳 Docker Deployment
+
+1. **Build and run with Docker Compose**
+```bash
+docker-compose up --build
+```
+
+2. **Access the application**
+- API: http://localhost:3000
+- Swagger Documentation: http://localhost:3000/api
+
+## 📚 API Documentation
+
+The API documentation is available through Swagger UI at `/api` endpoint when the application is running.
+
+## 🧪 Testing
+
+```bash
+# Unit tests
+npm run test
+
+# e2e tests
+npm run test:e2e
+
+# Test coverage
+npm run test:cov
+```
+
+## 📦 Available Scripts
+
+- `npm run build` - Build the application
+- `npm run start` - Start the application
+- `npm run start:dev` - Start the application in development mode
+- `npm run start:debug` - Start the application in debug mode
+- `npm run start:prod` - Start the application in production mode
+- `npm run lint` - Lint the code
+- `npm run test` - Run tests
+- `npm run test:watch` - Run tests in watch mode
+- `npm run test:cov` - Run tests with coverage
+- `npm run test:debug` - Run tests in debug mode
+- `npm run test:e2e` - Run end-to-end tests
+- `npm run prisma:seed` - Seed the database
+
+## 🔄 CI/CD
+
+The project includes GitHub Actions workflows for:
+- Automated testing
+- Code quality checks
+- Docker image building
+- Deployment
+
+## 📝 License
+
+This project is licensed under the ISC License - see the [LICENSE](LICENSE) file for details.
+
+## 🚀 API Endpoints
 
 ### Authentication Routes (`/auth`)
 
