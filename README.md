@@ -29,103 +29,197 @@ A comprehensive ecommerce API built with NestJS, TypeScript, Prisma, and Postgre
 - **Filtering Options** by date range, product name, and client type
 - **Automatic Cleanup** of temporary files
 
-#### Report Features
-- Generate detailed sales reports
-- Store reports securely in S3
-- Access reports via signed URLs
-- Track report metadata in database
-- Filter reports by various criteria
-- Automatic file cleanup
+### 🚀 Performance & Caching
+- **Redis Integration** for caching
+- **Health Checks** with @nestjs/terminus
+- **Metrics Collection** with prom-client
+- **Rate Limiting** for API endpoints
 
-#### S3 Integration
-- Secure file storage in AWS S3
-- Configurable bucket and region
-- Signed URL generation for file access
-- Automatic file cleanup
-- Environment-based configuration
+## 🛠️ Tech Stack
 
-### 👑 Admin Access Control
-The system implements a comprehensive admin access control system that provides unrestricted access to all features:
+- **Framework:** NestJS
+- **Language:** TypeScript
+- **Database:** PostgreSQL
+- **ORM:** Prisma
+- **Cache:** Redis
+- **Authentication:** JWT, Passport
+- **Storage:** AWS S3
+- **Testing:** Jest
+- **Documentation:** Swagger/OpenAPI
+- **Containerization:** Docker
 
-#### Admin Capabilities
-- **User Management**
-  - Create new user accounts
-  - View all users
-  - Update user information
-  - Delete users
-  - Manage user roles and permissions
+## 📋 Prerequisites
 
-- **Client Management**
-  - Create new clients
-  - View all clients
-  - Update client information
-  - Delete clients
-  - Link clients to users
+- Node.js (version specified in .nvmrc)
+- Docker and Docker Compose
+- PostgreSQL
+- Redis
+- AWS Account (for S3 integration)
 
-- **Product Management**
-  - Create products
-  - Update products
-  - Delete products
-  - Manage product categories
-  - Manage product stock
+## 🚀 Getting Started
 
-- **Order Management**
-  - View all orders
-  - Update order status
-  - Manage order details
-  - Process orders
-
-#### Admin Endpoints
-```http
-# User Management
-GET /users - List all users
-GET /users/:id - Get specific user
-PATCH /users/:id - Update user
-DELETE /users/:id - Delete user
-
-# Client Management
-POST /clients - Create client
-GET /clients - List all clients
-GET /clients/:id - Get specific client
-PATCH /clients/:id - Update client
-DELETE /clients/:id - Delete client
-
-# Product Management
-POST /products - Create product
-GET /products - List all products
-GET /products/:id - Get specific product
-PATCH /products/:id - Update product
-DELETE /products/:id - Delete product
-
-# Order Management
-GET /orders - List all orders
-GET /orders/:id - Get specific order
-PATCH /orders/:id - Update order status
+1. **Clone the repository**
+```bash
+git clone <repository-url>
+cd ecommerce
 ```
 
-#### Access Control Implementation
-- All admin endpoints are protected by:
-  1. JWT Authentication (`JwtAuthGuard`)
-  2. Role-based access control (`RolesGuard`)
-  3. Permission-based access control (`PermissionsGuard`)
+2. **Install dependencies**
+```bash
+npm install
+```
 
-- Admin users automatically have all permissions:
-  - `create:product`
-  - `read:product`
-  - `update:product`
-  - `delete:product`
-  - `manage:users`
-  - `manage:orders`
-  - `view:orders`
-  - `manage:categories`
-  - `manage:clients`
-  - `create:user`
-  - `update:user`
-  - `delete:user`
-  - `view:users`
-  - `manage:all`
+3. **Environment Setup**
+Create a `.env` file in the root directory with the following variables:
+```env
+# Database
+POSTGRES_USER=your_user
+POSTGRES_PASSWORD=your_password
+POSTGRES_DB=ecommerce
 
-## 📋 API Endpoints
+# JWT
+JWT_SECRET=your_jwt_secret
+JWT_EXPIRATION=1d
+
+# AWS S3
+AWS_ACCESS_KEY_ID=your_access_key
+AWS_SECRET_ACCESS_KEY=your_secret_key
+AWS_REGION=your_region
+AWS_BUCKET_NAME=your_bucket
+
+# Redis
+REDIS_HOST=localhost
+REDIS_PORT=6379
+```
+
+4. **Database Setup**
+```bash
+# Generate Prisma client
+npx prisma generate
+
+# Run migrations
+npx prisma migrate dev
+
+# Seed the database (optional)
+npm run prisma:seed
+```
+
+5. **Development**
+```bash
+# Start development server
+npm run start:dev
+
+# Run tests
+npm run test
+
+# Run tests with coverage
+npm run test:cov
+```
+
+## 🐳 Docker Deployment
+
+1. **Build and run with Docker Compose**
+```bash
+docker-compose up --build
+```
+
+2. **Access the application**
+- API: http://localhost:3000
+- Swagger Documentation: http://localhost:3000/api
+
+## 📚 API Documentation
+
+The API documentation is available through Swagger UI at `/api` endpoint when the application is running. The documentation includes:
+
+### Features
+- Interactive API documentation
+- Request/response examples
+- Authentication requirements
+- Data models and schemas
+- API endpoints grouping by tags
+- Try-it-out functionality
+
+### Accessing the Documentation
+1. Start the application:
+```bash
+npm run start:dev
+```
+
+2. Open your browser and navigate to:
+```
+http://localhost:3000/api
+```
+
+### Documentation Structure
+- **Authentication**: JWT Bearer token authentication
+- **Endpoints**: Grouped by functionality (auth, users, products, orders, etc.)
+- **Models**: Complete data models with validation rules
+- **Responses**: HTTP status codes and response schemas
+
+### Example Usage
+1. **Authentication**
+   - Use the `/auth/login` endpoint to get a JWT token
+   - Click the "Authorize" button in Swagger UI
+   - Enter your token in the format: `Bearer your-token-here`
+
+2. **Making Requests**
+   - Select an endpoint
+   - Click "Try it out"
+   - Fill in the required parameters
+   - Execute the request
+   - View the response
+
+### Available Tags
+- `auth`: Authentication endpoints
+- `users`: User management
+- `products`: Product management
+- `orders`: Order management
+- `clients`: Client management
+- `categories`: Category management
+- `health`: Health check endpoints
+- `metrics`: Application metrics
+
+## 🧪 Testing
+
+```bash
+# Unit tests
+npm run test
+
+# e2e tests
+npm run test:e2e
+
+# Test coverage
+npm run test:cov
+```
+
+## 📦 Available Scripts
+
+- `npm run build` - Build the application
+- `npm run start` - Start the application
+- `npm run start:dev` - Start the application in development mode
+- `npm run start:debug` - Start the application in debug mode
+- `npm run start:prod` - Start the application in production mode
+- `npm run lint` - Lint the code
+- `npm run test` - Run tests
+- `npm run test:watch` - Run tests in watch mode
+- `npm run test:cov` - Run tests with coverage
+- `npm run test:debug` - Run tests in debug mode
+- `npm run test:e2e` - Run end-to-end tests
+- `npm run prisma:seed` - Seed the database
+
+## 🔄 CI/CD
+
+The project includes GitHub Actions workflows for:
+- Automated testing
+- Code quality checks
+- Docker image building
+- Deployment
+
+## 📝 License
+
+This project is licensed under the ISC License - see the [LICENSE](LICENSE) file for details.
+
+## 🚀 API Endpoints
 
 ### Authentication Routes (`/auth`)
 
@@ -640,7 +734,7 @@ Authorization: Bearer <your-jwt-token>
 }
 ```
 
-**Success Response (201):**
+**Success Response (201):**a
 ```json
 {
   "id": "cart-item-uuid",
@@ -872,6 +966,211 @@ Authorization: Bearer <your-jwt-token>
   "fileUrl": "https://your-bucket.s3.amazonaws.com/reports/sales_report_1234567890.csv?X-Amz-Algorithm=..."
 }
 ```
+
+## 🏗️ Architecture Decisions
+
+### Overview
+The project follows a modular architecture using NestJS framework, implementing several design patterns and architectural principles to ensure maintainability, scalability, and code quality.
+
+### Core Architecture
+
+#### 1. Modular Structure
+```
+src/
+├── auth/           # Authentication module
+├── user/           # User management
+├── product/        # Product management
+├── order/          # Order processing
+├── client/         # Client management
+├── category/       # Product categories
+├── cart/           # Shopping cart
+├── report/         # Report generation
+├── health/         # Health checks
+├── metrics/        # Application metrics
+├── s3/             # AWS S3 integration
+└── prisma/         # Database layer
+```
+
+#### 2. Design Patterns Implemented
+
+##### Repository Pattern
+- Used in PrismaService for database operations
+- Abstracts database access from business logic
+- Provides a consistent interface for data operations
+
+##### Strategy Pattern
+- Authentication strategies (JWT, Local)
+- Different strategies for different authentication methods
+- Easy to extend with new authentication methods
+
+##### Interceptor Pattern
+- Error handling (ErrorInterceptor)
+- Caching (CacheInterceptor)
+- Metrics collection (HttpMetricsInterceptor)
+- Request/Response transformation
+
+##### Guard Pattern
+- Authentication (JwtAuthGuard)
+- Role-based access (RolesGuard)
+- Rate limiting (RateLimitGuard)
+
+##### Factory Pattern
+- Service instantiation
+- Configuration objects creation
+
+### 3. SOLID Principles
+
+#### Single Responsibility Principle (SRP)
+- Each module has a single responsibility
+- Services are focused on specific business logic
+- Controllers handle only HTTP concerns
+
+#### Open/Closed Principle (OCP)
+- Extensible authentication strategies
+- Pluggable interceptors
+- Configurable guards
+
+#### Liskov Substitution Principle (LSP)
+- Consistent interfaces across implementations
+- Type-safe inheritance
+
+#### Interface Segregation Principle (ISP)
+- Focused interfaces for specific use cases
+- No client forced to depend on unused methods
+
+#### Dependency Inversion Principle (DIP)
+- Dependency injection throughout the application
+- High-level modules don't depend on low-level modules
+- Both depend on abstractions
+
+### 4. Security Architecture
+
+#### Authentication
+- JWT-based authentication
+- Token refresh mechanism
+- Secure password hashing with bcrypt
+
+#### Authorization
+- Role-based access control (RBAC)
+- Permission-based access control
+- Granular permissions system
+
+#### Data Protection
+- Input validation
+- Data sanitization
+- SQL injection prevention (Prisma)
+- XSS protection
+
+### 5. Data Flow
+
+```
+Client Request
+    ↓
+Rate Limiting
+    ↓
+Authentication
+    ↓
+Authorization
+    ↓
+Request Validation
+    ↓
+Business Logic
+    ↓
+Database Operations
+    ↓
+Response Transformation
+    ↓
+Client Response
+```
+
+### 6. Caching Strategy
+
+#### Redis Implementation
+- In-memory caching for frequently accessed data
+- Cache invalidation strategies
+- Distributed caching support
+
+#### Cache Levels
+1. Application-level caching
+2. Database query caching
+3. API response caching
+
+### 7. Error Handling
+
+#### Error Hierarchy
+```
+BaseError
+├── ValidationError
+├── AuthenticationError
+├── AuthorizationError
+├── BusinessLogicError
+└── SystemError
+```
+
+#### Error Response Format
+```json
+{
+  "statusCode": number,
+  "message": string,
+  "error": string,
+  "timestamp": string,
+  "path": string
+}
+```
+
+### 8. Testing Strategy
+
+#### Unit Tests
+- Service layer testing
+- Controller testing
+- Guard testing
+- Interceptor testing
+
+#### Integration Tests
+- API endpoint testing
+- Database integration
+- External service integration
+
+#### E2E Tests
+- Complete flow testing
+- User journey testing
+
+### 9. Performance Considerations
+
+#### Optimization Techniques
+- Database indexing
+- Query optimization
+- Caching strategies
+- Rate limiting
+- Connection pooling
+
+#### Monitoring
+- Health checks
+- Metrics collection
+- Performance monitoring
+- Error tracking
+
+### 10. Scalability
+
+#### Horizontal Scaling
+- Stateless architecture
+- Containerized deployment
+- Load balancing ready
+
+#### Vertical Scaling
+- Database optimization
+- Caching implementation
+- Resource management
+
+### 11. Future Considerations
+
+#### Planned Improvements
+1. Implement CQRS pattern for complex operations
+2. Add event-driven architecture for async operations
+3. Implement circuit breaker pattern
+4. Add more comprehensive logging
+5. Implement API versioning
+6. Add GraphQL support
 
 ## 🛠️ Setup Instructions
 
