@@ -33,8 +33,26 @@ jobs:
           mkdir -p /home/ec2-user/ecommerce-api
           EOF
           
+      - name: Build application locally
+        run: |
+          echo "=== Installing dependencies ==="
+          npm ci
+          echo "=== Building application ==="
+          npm run build
+          echo "=== Verificando build local ==="
+          ls -la
+          echo "=== Verificando dist/ ==="
+          ls -la dist/
+          echo "=== Verificando dist/src/ ==="
+          ls -la dist/src/
+          echo "=== Verificando main.js ==="
+          test -f dist/src/main.js && echo "✓ Build successful - main.js found" || (echo "❌ Build failed - main.js not found" && exit 1)
+          echo "=== Checking total files to upload ==="
+          find . -type f | grep -E '\.(js|json|ts)
+          
       - name: Upload project to EC2
         run: |
+          echo "=== Uploading files to EC2 ==="
           rsync -avz --delete \
             --exclude='.git' \
             --exclude='.github' \
@@ -43,12 +61,33 @@ jobs:
             --exclude='*.log' \
             --exclude='.DS_Store' \
             --exclude='coverage' \
-            --exclude='dist' \
-            --exclude='build' \
             --exclude='tmp' \
             --exclude='*.tmp' \
+            --exclude='tsconfig.tsbuildinfo' \
             -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no" \
             . ec2-user@${{ secrets.HOST }}:/home/ec2-user/ecommerce-api/
+          echo "=== Upload completed ==="
+            
+      - name: Verify uploaded files
+        run: |
+          ssh -i ~/.ssh/id_rsa ec2-user@${{ secrets.HOST }} << 'EOF'
+          cd /home/ec2-user/ecommerce-api
+          echo "=== Verificando arquivos enviados ==="
+          ls -la
+          echo "=== Verificando se dist/ foi enviado ==="
+          if [ -d "dist" ]; then
+            echo "✓ dist/ directory found"
+            ls -la dist/
+            echo "=== Verificando dist/src/ ==="
+            ls -la dist/src/ 2>/dev/null || echo "dist/src/ not found"
+          else
+            echo "❌ dist/ directory NOT found"
+          fi
+          echo "=== Verificando src/ ==="
+          ls -la src/ 2>/dev/null || echo "src/ não encontrado"
+          echo "=== Verificando arquivos de configuração ==="
+          ls -la *.json 2>/dev/null || echo "Arquivos .json não encontrados"
+          EOF
             
       - name: Deploy application
         run: |
@@ -58,37 +97,3 @@ jobs:
           # Stop existing containers
           echo "Stopping existing containers..."
           docker-compose down || true
-          
-          # Remove unused Docker resources
-          echo "Cleaning up Docker resources..."
-          docker system prune -f || true
-          
-          # Build and start containers
-          echo "Building and starting containers..."
-          docker-compose build --no-cache
-          docker-compose up -d
-          
-          # Show running containers
-          echo "Running containers:"
-          docker-compose ps
-          
-          # Show logs for debugging
-          echo "Recent logs:"
-          docker-compose logs --tail=50
-          EOF
-          
-      - name: Health check
-        run: |
-          ssh -i ~/.ssh/id_rsa ec2-user@${{ secrets.HOST }} << 'EOF'
-          echo "Waiting for application to start..."
-          sleep 10
-          
-          # Check if containers are running
-          if docker-compose -f /home/ec2-user/ecommerce-api/docker-compose.yml ps | grep -q "Up"; then
-            echo "✅ Deployment successful - containers are running"
-          else
-            echo "❌ Deployment failed - containers not running"
-            docker-compose -f /home/ec2-user/ecommerce-api/docker-compose.yml logs
-            exit 1
-          fi
-          EOF
