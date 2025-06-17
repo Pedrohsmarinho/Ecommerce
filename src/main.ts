@@ -6,6 +6,7 @@ import { ErrorInterceptor } from './interceptors/error.interceptor';
 import { CacheInterceptor } from './interceptors/cache.interceptor';
 import { RateLimitGuard } from './guards/rate-limit.guard';
 import { ConfigService } from '@nestjs/config';
+import { HttpMetricsInterceptor } from './metrics/http-metrics.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -21,10 +22,14 @@ async function bootstrap() {
     forbidNonWhitelisted: true,
   }));
 
+
+  const httpMetricsInterceptor = app.get(HttpMetricsInterceptor);
+
   // Global interceptors
   app.useGlobalInterceptors(
     new ErrorInterceptor(),
     new CacheInterceptor(configService),
+    httpMetricsInterceptor,
   );
 
   // Global guards
