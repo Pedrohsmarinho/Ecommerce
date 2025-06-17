@@ -11,7 +11,7 @@ import { CartModule } from './cart/cart.module';
 import { ReportModule } from './report/report.module';
 import { HealthModule } from './health/health.module';
 import { S3Module } from './s3/s3.module';
-
+import { MetricsModule } from './metrics/metrics.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -27,7 +27,8 @@ import { S3Module } from './s3/s3.module';
     ReportModule,
     HealthModule,
     S3Module,
+    MetricsModule
   ],
   providers: [PrismaService],
 })
-export class AppModule {}
+export class AppModule { }
