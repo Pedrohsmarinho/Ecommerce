@@ -1,27 +1,27 @@
 import { Injectable, NestInterceptor, ExecutionContext, CallHandler } from '@nestjs/common';
 import { Observable, of } from 'rxjs';
 import { tap } from 'rxjs/operators';
-import { Redis } from 'ioredis';
-import { ConfigService } from '@nestjs/config';
+import { RedisService } from '../redis/redis.service';
 
 @Injectable()
 export class CacheInterceptor implements NestInterceptor {
-  private readonly redis: Redis;
   private readonly defaultTTL = 300; // 5 minutes in seconds
 
-  constructor(private configService: ConfigService) {
-    this.redis = new Redis({
-      host: this.configService.get('REDIS_HOST', 'localhost'),
-      port: this.configService.get('REDIS_PORT', 6379),
-    });
-  }
+  constructor(private redisService: RedisService) {}
 
   async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<any>> {
     const request = context.switchToHttp().getRequest();
+    const method = request.method.toUpperCase();
+
+    // Only cache GET requests - CRITICAL FIX
+    if (method !== 'GET') {
+      return next.handle();
+    }
+
     const key = this.generateCacheKey(request);
 
     // Check if data exists in cache
-    const cachedData = await this.redis.get(key);
+    const cachedData = await this.redisService.get(key);
     if (cachedData) {
       return of(JSON.parse(cachedData));
     }
@@ -29,7 +29,7 @@ export class CacheInterceptor implements NestInterceptor {
     // If not in cache, get from handler and cache it
     return next.handle().pipe(
       tap(async data => {
-        await this.redis.setex(key, this.defaultTTL, JSON.stringify(data));
+        await this.redisService.set(key, JSON.stringify(data), this.defaultTTL);
       })
     );
   }

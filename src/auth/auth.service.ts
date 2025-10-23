@@ -3,9 +3,9 @@ import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { User, UserType } from '@prisma/client';
-import { sendVerificationEmail } from '../utils/email';
-import { generateVerificationToken } from '../utils/token';
 import { hashRefreshToken, compareRefreshToken } from '../utils/hash';
+import { EmailService } from '../notifications/email.service';
+import { ClientProvisioningService } from '../client/client-provisioning.service';
 
 interface jwtPayload {
   email: string;
@@ -17,7 +17,9 @@ interface jwtPayload {
 export class AuthService {
   constructor(
     private prisma: PrismaService,
-    public jwtService: JwtService
+    public jwtService: JwtService,
+    private emailService: EmailService,
+    private clientProvisioningService: ClientProvisioningService
   ) {}
 
   async validateUser(email: string, password: string): Promise<Omit<User, 'password'> | null> {
@@ -138,10 +140,9 @@ export class AuthService {
     }
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Generate cryptographically secure verification token
-    const token = generateVerificationToken();
-    const expires = new Date();
-    expires.setHours(expires.getHours() + 24);
+    // Generate token and expiration using EmailService
+    const token = this.emailService.generateVerificationToken();
+    const expires = this.emailService.getTokenExpiration(24);
 
     const user = await this.prisma.user.create({
       data: {
@@ -154,20 +155,18 @@ export class AuthService {
       },
     });
 
-    // If user is CLIENT type, create client profile
-    if (type === UserType.CLIENT) {
-      await this.prisma.client.create({
-        data: {
-          userId: user.id,
-          fullName: name,
-          contact: contact || '',
-          address: address || '',
-        },
+    // Create client profile if needed (delegated to ClientProvisioningService)
+    if (await this.clientProvisioningService.shouldCreateClientProfile(type)) {
+      await this.clientProvisioningService.createClientProfile({
+        userId: user.id,
+        name,
+        contact,
+        address,
       });
     }
 
-    // Send verification email
-    await sendVerificationEmail(email, token);
+    // Send verification email (delegated to EmailService)
+    await this.emailService.sendVerificationEmail(email, token);
 
     // Return user info (tokens are generated at login)
     return {

@@ -5,6 +5,8 @@ import { JwtService } from '@nestjs/jwt';
 import { UnauthorizedException, ConflictException } from '@nestjs/common';
 import { UserType } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
+import { EmailService } from '../../notifications/email.service';
+import { ClientProvisioningService } from '../../client/client-provisioning.service';
 
 jest.mock('bcrypt');
 jest.mock('../../utils/email', () => ({
@@ -34,6 +36,17 @@ describe('AuthService', () => {
     verifyAsync: jest.fn(),
   };
 
+  const mockEmailService = {
+    sendVerificationEmail: jest.fn(),
+    generateVerificationToken: jest.fn().mockReturnValue('test-token'),
+    getTokenExpiration: jest.fn().mockReturnValue(new Date()),
+  };
+
+  const mockClientProvisioningService = {
+    createClientProfile: jest.fn(),
+    shouldCreateClientProfile: jest.fn().mockResolvedValue(true),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -45,6 +58,14 @@ describe('AuthService', () => {
         {
           provide: JwtService,
           useValue: mockJwtService,
+        },
+        {
+          provide: EmailService,
+          useValue: mockEmailService,
+        },
+        {
+          provide: ClientProvisioningService,
+          useValue: mockClientProvisioningService,
         },
       ],
     }).compile();
@@ -273,7 +294,8 @@ describe('AuthService', () => {
       mockPrismaService.user.findUnique.mockResolvedValue(null);
       (bcrypt.hash as jest.Mock).mockResolvedValue(hashedPassword);
       mockPrismaService.user.create.mockResolvedValue(mockUser);
-      mockPrismaService.client.create.mockResolvedValue({});
+      mockClientProvisioningService.shouldCreateClientProfile.mockResolvedValue(true);
+      mockClientProvisioningService.createClientProfile.mockResolvedValue(undefined);
 
       const result = await service.register(email, password, name, type, contact, address);
 
@@ -287,7 +309,13 @@ describe('AuthService', () => {
         },
       });
       expect(mockPrismaService.user.create).toHaveBeenCalled();
-      expect(mockPrismaService.client.create).toHaveBeenCalled();
+      expect(mockClientProvisioningService.createClientProfile).toHaveBeenCalledWith({
+        userId: mockUser.id,
+        name: mockUser.name,
+        contact,
+        address,
+      });
+      expect(mockEmailService.sendVerificationEmail).toHaveBeenCalledWith(email, 'test-token');
     });
 
     it('should throw ConflictException when email already exists', async () => {

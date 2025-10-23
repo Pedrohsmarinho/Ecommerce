@@ -8,11 +8,14 @@ import { PassportModule } from '@nestjs/passport';
 import { LocalStrategy } from './strategies/local.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { RolesGuard } from './guards/roles.guard';
+import { EmailModule } from '../notifications/email.module';
+import { ClientProvisioningService } from '../client/client-provisioning.service';
 
 @Module({
   imports: [
     PrismaModule,
     PassportModule,
+    EmailModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
@@ -23,7 +26,7 @@ import { RolesGuard } from './guards/roles.guard';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, LocalStrategy, JwtStrategy, RolesGuard],
+  providers: [AuthService, LocalStrategy, JwtStrategy, RolesGuard, ClientProvisioningService],
   exports: [AuthService, RolesGuard],
 })
 export class AuthModule {}
