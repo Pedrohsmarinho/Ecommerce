@@ -27,8 +27,8 @@ import { MetricsModule } from './metrics/metrics.module';
     ReportModule,
     HealthModule,
     S3Module,
-    MetricsModule
+    MetricsModule,
   ],
   providers: [PrismaService],
 })
-export class AppModule { }
+export class AppModule {}

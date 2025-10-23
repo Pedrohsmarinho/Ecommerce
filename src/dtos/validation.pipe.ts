@@ -2,6 +2,9 @@ import { PipeTransform, Injectable, ArgumentMetadata, BadRequestException } from
 import { validate } from 'class-validator';
 import { plainToClass } from 'class-transformer';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Constructor<T = any> = new (...args: any[]) => T;
+
 @Injectable()
 export class ValidationPipe implements PipeTransform<any> {
   async transform(value: any, { metatype }: ArgumentMetadata) {
@@ -29,8 +32,8 @@ export class ValidationPipe implements PipeTransform<any> {
     return object;
   }
 
-  private toValidate(metatype: Function): boolean {
-    const types: Function[] = [String, Boolean, Number, Array, Object];
+  private toValidate(metatype: Constructor<any>): boolean {
+    const types: Constructor<any>[] = [String, Boolean, Number, Array, Object];
     return !types.includes(metatype);
   }
 }

@@ -8,6 +8,6 @@ import { S3Module } from '../s3/s3.module';
   imports: [PrismaModule, S3Module],
   controllers: [ReportController],
   providers: [ReportService],
-  exports: [ReportService]
+  exports: [ReportService],
 })
 export class ReportModule {}

@@ -12,3 +12,17 @@ export const comparePasswords = async (
 ): Promise<boolean> => {
   return bcrypt.compare(password, hashedPassword);
 };
+
+/**
+ * Hash a refresh token for secure storage
+ */
+export const hashRefreshToken = async (token: string): Promise<string> => {
+  return bcrypt.hash(token, SALT_ROUNDS);
+};
+
+/**
+ * Compare a refresh token with its hashed version
+ */
+export const compareRefreshToken = async (token: string, hashedToken: string): Promise<boolean> => {
+  return bcrypt.compare(token, hashedToken);
+};

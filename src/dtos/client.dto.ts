@@ -4,7 +4,7 @@ import { ApiProperty } from '@nestjs/swagger';
 export class CreateClientDto {
   @ApiProperty({
     description: 'Full name of the client',
-    example: 'John Doe'
+    example: 'John Doe',
   })
   @IsString()
   @IsNotEmpty()
@@ -12,7 +12,7 @@ export class CreateClientDto {
 
   @ApiProperty({
     description: 'Contact information (phone number)',
-    example: '+1234567890'
+    example: '+1234567890',
   })
   @IsString()
   @IsNotEmpty()
@@ -20,7 +20,7 @@ export class CreateClientDto {
 
   @ApiProperty({
     description: 'Client address',
-    example: '123 Main St, City, Country'
+    example: '123 Main St, City, Country',
   })
   @IsString()
   @IsNotEmpty()
@@ -28,7 +28,7 @@ export class CreateClientDto {
 
   @ApiProperty({
     description: 'ID of the associated user',
-    example: '123e4567-e89b-12d3-a456-426614174000'
+    example: '123e4567-e89b-12d3-a456-426614174000',
   })
   @IsString()
   @IsNotEmpty()
@@ -39,7 +39,7 @@ export class UpdateClientDto {
   @ApiProperty({
     description: 'Full name of the client',
     example: 'John Doe',
-    required: false
+    required: false,
   })
   @IsString()
   @IsOptional()
@@ -48,7 +48,7 @@ export class UpdateClientDto {
   @ApiProperty({
     description: 'Contact information (phone number)',
     example: '+1234567890',
-    required: false
+    required: false,
   })
   @IsString()
   @IsOptional()
@@ -57,7 +57,7 @@ export class UpdateClientDto {
   @ApiProperty({
     description: 'Client address',
     example: '123 Main St, City, Country',
-    required: false
+    required: false,
   })
   @IsString()
   @IsOptional()
@@ -66,7 +66,7 @@ export class UpdateClientDto {
   @ApiProperty({
     description: 'Client status',
     example: true,
-    required: false
+    required: false,
   })
   @IsBoolean()
   @IsOptional()
@@ -76,19 +76,19 @@ export class UpdateClientDto {
 export class FilterClientDto {
   @ApiProperty({
     description: 'Filter by client name',
-    required: false
+    required: false,
   })
   name?: string;
 
   @ApiProperty({
     description: 'Filter by client email',
-    required: false
+    required: false,
   })
   email?: string;
 
   @ApiProperty({
     description: 'Filter by client status',
-    required: false
+    required: false,
   })
   status?: boolean;
 }

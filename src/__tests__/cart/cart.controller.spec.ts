@@ -19,8 +19,8 @@ describe('CartController', () => {
 
   const mockRequest = {
     user: {
-      clientId: '1'
-    }
+      clientId: '1',
+    },
   };
 
   beforeEach(async () => {
@@ -84,7 +84,11 @@ describe('CartController', () => {
       const result = await controller.updateCartItem(mockRequest, cartItemId, updateCartItemDto);
 
       expect(result).toEqual(mockCartItem);
-      expect(cartService.updateCartItem).toHaveBeenCalledWith(mockRequest.user.clientId, cartItemId, updateCartItemDto);
+      expect(cartService.updateCartItem).toHaveBeenCalledWith(
+        mockRequest.user.clientId,
+        cartItemId,
+        updateCartItemDto
+      );
     });
   });
 
@@ -98,7 +102,10 @@ describe('CartController', () => {
       const result = await controller.removeFromCart(mockRequest, cartItemId);
 
       expect(result).toEqual(mockResponse);
-      expect(cartService.removeFromCart).toHaveBeenCalledWith(mockRequest.user.clientId, cartItemId);
+      expect(cartService.removeFromCart).toHaveBeenCalledWith(
+        mockRequest.user.clientId,
+        cartItemId
+      );
     });
   });
 

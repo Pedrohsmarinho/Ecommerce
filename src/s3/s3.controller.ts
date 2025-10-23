@@ -1,4 +1,12 @@
-import { Controller, Post, Get, Param, UseInterceptors, UploadedFile, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Param,
+  UseInterceptors,
+  UploadedFile,
+  UseGuards,
+} from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { S3Service } from './s3.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -25,7 +33,9 @@ export class S3Controller {
     },
   })
   @UseInterceptors(FileInterceptor('file'))
-  async uploadFile(@UploadedFile() file: { buffer: Buffer; mimetype: string; originalname: string }) {
+  async uploadFile(
+    @UploadedFile() file: { buffer: Buffer; mimetype: string; originalname: string }
+  ) {
     const key = `test/${Date.now()}-${file.originalname}`;
     await this.s3Service.uploadFile(file, key);
     const url = await this.s3Service.getSignedUrl(key);

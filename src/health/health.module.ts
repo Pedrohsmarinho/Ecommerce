@@ -5,10 +5,7 @@ import { ConfigModule } from '@nestjs/config';
 import { TerminusModule } from '@nestjs/terminus';
 
 @Module({
-  imports: [
-    TerminusModule,
-    ConfigModule,
-  ],
+  imports: [TerminusModule, ConfigModule],
   controllers: [HealthController],
   providers: [PrismaService],
 })

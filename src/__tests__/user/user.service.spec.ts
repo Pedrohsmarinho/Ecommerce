@@ -8,7 +8,6 @@ import { UpdateProfileDTO } from '../../user/dto/update-profile.dto';
 
 describe('UserService', () => {
   let service: UserService;
-  let prismaService: PrismaService;
 
   const mockPrismaService = {
     user: {
@@ -37,7 +36,6 @@ describe('UserService', () => {
     }).compile();
 
     service = module.get<UserService>(UserService);
-    prismaService = module.get<PrismaService>(PrismaService);
   });
 
   afterEach(() => {
@@ -187,7 +185,9 @@ describe('UserService', () => {
 
       mockPrismaService.user.findUnique.mockResolvedValue(mockUser);
 
-      await expect(service.updateProfile(userId, updateProfileDto)).rejects.toThrow(ForbiddenException);
+      await expect(service.updateProfile(userId, updateProfileDto)).rejects.toThrow(
+        ForbiddenException
+      );
     });
   });
 

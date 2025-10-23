@@ -19,7 +19,7 @@ export class RegisterDto {
   @ApiProperty({
     enum: UserType,
     example: UserType.CLIENT,
-    description: 'User type (ADMIN or CLIENT)'
+    description: 'User type (ADMIN or CLIENT)',
   })
   @IsEnum(UserType)
   type: UserType;

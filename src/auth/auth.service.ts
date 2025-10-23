@@ -5,18 +5,25 @@ import * as bcrypt from 'bcrypt';
 import { User, UserType } from '@prisma/client';
 import { sendVerificationEmail } from '../utils/email';
 import { generateVerificationToken } from '../utils/token';
+import { hashRefreshToken, compareRefreshToken } from '../utils/hash';
+
+interface jwtPayload {
+  email: string;
+  sub: string;
+  type: UserType;
+}
 
 @Injectable()
 export class AuthService {
   constructor(
     private prisma: PrismaService,
-    public jwtService: JwtService,
+    public jwtService: JwtService
   ) {}
 
   async validateUser(email: string, password: string): Promise<Omit<User, 'password'> | null> {
     const user = await this.prisma.user.findUnique({ where: { email } });
-    if (user && await bcrypt.compare(password, user.password)) {
-      const { password, ...result } = user;
+    if (user && (await bcrypt.compare(password, user.password))) {
+      const { password: _, ...result } = user;
       return result;
     }
     return null;
@@ -26,7 +33,7 @@ export class AuthService {
     const payload = {
       email: user.email,
       sub: user.id,
-      type: user.type  // Mudando de roles para type
+      type: user.type,
     };
 
     const [accessToken, refreshToken] = await Promise.all([
@@ -38,10 +45,11 @@ export class AuthService {
       }),
     ]);
 
-    // Store refresh token in database
+    // Hash and store refresh token in database
+    const hashedRefreshToken = await hashRefreshToken(refreshToken);
     await this.prisma.user.update({
       where: { id: user.id },
-      data: { refreshToken },
+      data: { refreshToken: hashedRefreshToken },
     });
 
     return {
@@ -50,30 +58,56 @@ export class AuthService {
     };
   }
 
-  async refreshToken(userId: string, refreshToken: string) {
+  async refreshToken(refreshToken: string) {
+    // Verify token signature first
+    let payload: jwtPayload;
+
+    try {
+      payload = await this.jwtService.verifyAsync(refreshToken);
+    } catch (error) {
+      throw new UnauthorizedException('Invalid or expired refresh token');
+    }
+
     const user = await this.prisma.user.findUnique({
-      where: { id: userId },
+      where: { id: payload.sub },
     });
 
-    if (!user || user.refreshToken !== refreshToken) {
+    if (!user || !user.refreshToken) {
       throw new UnauthorizedException('Invalid refresh token');
     }
 
-    const payload = { email: user.email, sub: user.id, roles: user.type };
+    // Compare hashed refresh token
+    const isValidToken = await compareRefreshToken(refreshToken, user.refreshToken);
+    if (!isValidToken) {
+      throw new UnauthorizedException('Invalid refresh token');
+    }
+
+    // Generate new tokens with consistent payload structure
+    // Add jti (JWT ID) and iat to ensure token uniqueness
+    const accessPayload = {
+      email: user.email,
+      sub: user.id,
+      type: user.type,
+      jti: Math.random().toString(36).substring(2) + Date.now().toString(36),
+    };
+
+    const refreshPayload = {
+      email: user.email,
+      sub: user.id,
+      type: user.type,
+      jti: Math.random().toString(36).substring(2) + Date.now().toString(36) + Math.random(),
+    };
 
     const [newAccessToken, newRefreshToken] = await Promise.all([
-      this.jwtService.signAsync(payload, {
-        expiresIn: '15m',
-      }),
-      this.jwtService.signAsync(payload, {
-        expiresIn: '7d',
-      }),
+      this.jwtService.signAsync(accessPayload, { expiresIn: '15m' }),
+      this.jwtService.signAsync(refreshPayload, { expiresIn: '7d' }),
     ]);
 
-    // Update refresh token in database
+    // Hash and update refresh token in database
+    const hashedRefreshToken = await hashRefreshToken(newRefreshToken);
     await this.prisma.user.update({
       where: { id: user.id },
-      data: { refreshToken: newRefreshToken },
+      data: { refreshToken: hashedRefreshToken },
     });
 
     return {
@@ -90,15 +124,22 @@ export class AuthService {
     });
   }
 
-  async register(email: string, password: string, name: string, type: UserType, contact?: string, address?: string) {
+  async register(
+    email: string,
+    password: string,
+    name: string,
+    type: UserType,
+    contact: string,
+    address: string
+  ) {
     const existingUser = await this.prisma.user.findUnique({ where: { email } });
     if (existingUser) {
       throw new ConflictException('Email already exists');
     }
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Generate verification token
-    const token = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    // Generate cryptographically secure verification token
+    const token = generateVerificationToken();
     const expires = new Date();
     expires.setHours(expires.getHours() + 24);
 
@@ -128,28 +169,7 @@ export class AuthService {
     // Send verification email
     await sendVerificationEmail(email, token);
 
-    // Generate tokens
-    const payload = {
-      email: user.email,
-      sub: user.id,
-      type: user.type
-    };
-
-    const [accessToken, refreshToken] = await Promise.all([
-      this.jwtService.signAsync(payload, {
-        expiresIn: '15m',
-      }),
-      this.jwtService.signAsync(payload, {
-        expiresIn: '7d',
-      }),
-    ]);
-
-    // Store refresh token in database
-    await this.prisma.user.update({
-      where: { id: user.id },
-      data: { refreshToken },
-    });
-
+    // Return user info (tokens are generated at login)
     return {
       user: {
         id: user.id,

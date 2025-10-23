@@ -101,14 +101,12 @@ describe('AuthController', () => {
         access_token: 'new-access-token',
         refresh_token: 'new-refresh-token',
       };
-      // Mock do jwtService.decode
-      authService.jwtService = { decode: jest.fn().mockReturnValue({ sub: 'userId' }) } as any;
       mockAuthService.refreshToken.mockResolvedValue(mockResponse);
 
       const result = await controller.refreshToken({ refreshToken });
 
       expect(result).toEqual(mockResponse);
-      expect(authService.refreshToken).toHaveBeenCalledWith('userId', refreshToken);
+      expect(authService.refreshToken).toHaveBeenCalledWith(refreshToken);
     });
   });
 

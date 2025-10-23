@@ -4,7 +4,6 @@ import { S3Service } from '../s3/s3.service';
 import { GenerateReportDto } from '../dtos/report.dto';
 import { createObjectCsvWriter } from 'csv-writer';
 import { Prisma } from '@prisma/client';
-import { Readable } from 'stream';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
@@ -27,7 +26,7 @@ interface Totals {
 export class ReportService {
   constructor(
     private prisma: PrismaService,
-    private s3Service: S3Service,
+    private s3Service: S3Service
   ) {}
 
   async generateReport(dto: GenerateReportDto, userId: string) {
@@ -70,11 +69,15 @@ export class ReportService {
       WHERE o.status != 'CANCELLED'
         AND o."orderDate" >= ${new Date(dto.startDate)}
         AND o."orderDate" <= ${new Date(dto.endDate)}
-        ${dto.productName ? Prisma.sql`AND EXISTS (
+        ${
+          dto.productName
+            ? Prisma.sql`AND EXISTS (
           SELECT 1 FROM "OrderItem" oi2 
           JOIN "Product" p ON p.id = oi2."productId" 
           WHERE oi2."orderId" = o.id AND p.name ILIKE ${`%${dto.productName}%`}
-        )` : Prisma.sql``}
+        )`
+            : Prisma.sql``
+        }
         ${dto.clientType ? Prisma.sql`AND u.type = ${dto.clientType}` : Prisma.sql``}
     `;
 
@@ -90,8 +93,8 @@ export class ReportService {
         { id: 'total_orders', title: 'Total Orders' },
         { id: 'total_quantity', title: 'Total Quantity' },
         { id: 'total_revenue', title: 'Total Revenue' },
-        { id: 'average_price', title: 'Average Price' }
-      ]
+        { id: 'average_price', title: 'Average Price' },
+      ],
     });
 
     await csvWriter.writeRecords(salesData);
@@ -104,7 +107,7 @@ export class ReportService {
       {
         buffer: fileBuffer,
         mimetype: 'text/csv',
-        originalname: fileName
+        originalname: fileName,
       },
       s3Key
     );
@@ -125,8 +128,8 @@ export class ReportService {
         totalSales: totals[0].total_revenue || 0,
         totalOrders: Number(totals[0].total_orders) || 0,
         filters: dto as unknown as Prisma.JsonValue,
-        userId
-      }
+        userId,
+      },
     });
 
     return {
@@ -134,15 +137,15 @@ export class ReportService {
       summary: {
         totalOrders: Number(totals[0].total_orders) || 0,
         totalRevenue: totals[0].total_revenue || 0,
-        productCount: salesData.length
+        productCount: salesData.length,
       },
-      fileUrl // Include the signed URL in the response
+      fileUrl, // Include the signed URL in the response
     };
   }
 
   async getReport(id: string) {
     const report = await this.prisma.report.findUnique({
-      where: { id }
+      where: { id },
     });
 
     if (report) {
@@ -156,12 +159,12 @@ export class ReportService {
 
   async listReports() {
     const reports = await this.prisma.report.findMany({
-      orderBy: { createdAt: 'desc' }
+      orderBy: { createdAt: 'desc' },
     });
 
     // Get signed URLs for all reports
     const reportsWithUrls = await Promise.all(
-      reports.map(async (report) => {
+      reports.map(async report => {
         const fileUrl = await this.s3Service.getSignedUrl(report.filePath);
         return { ...report, fileUrl };
       })

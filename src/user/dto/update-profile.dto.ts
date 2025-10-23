@@ -1,11 +1,19 @@
-import { z } from 'zod';
+import { IsString, IsOptional } from 'class-validator';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 
-export const updateProfileSchema = z.object({
-  body: z.object({
-    name: z.string().min(1, 'Name is required').optional(),
-    contact: z.string().min(1, 'Contact is required').optional(),
-    address: z.string().min(1, 'Address is required').optional(),
-  }),
-});
+export class UpdateProfileDTO {
+  @ApiPropertyOptional({ example: 'John Doe', description: 'User full name' })
+  @IsOptional()
+  @IsString()
+  name?: string;
 
-export type UpdateProfileDTO = z.infer<typeof updateProfileSchema>['body'];
+  @ApiPropertyOptional({ example: '+1234567890', description: 'Contact phone number' })
+  @IsOptional()
+  @IsString()
+  contact?: string;
+
+  @ApiPropertyOptional({ example: '123 Main St, City, Country', description: 'User address' })
+  @IsOptional()
+  @IsString()
+  address?: string;
+}

@@ -17,7 +17,12 @@ export class MetricsService {
     });
   }
 
-  observeRequestDuration(method: string, route: string, statusCode: string, durationSeconds: number) {
+  observeRequestDuration(
+    method: string,
+    route: string,
+    statusCode: string,
+    durationSeconds: number
+  ) {
     this.httpRequestDurationSeconds.labels(method, route, statusCode).observe(durationSeconds);
   }
 

@@ -1,4 +1,10 @@
-import { Injectable, CanActivate, ExecutionContext, HttpException, HttpStatus } from '@nestjs/common';
+import {
+  Injectable,
+  CanActivate,
+  ExecutionContext,
+  HttpException,
+  HttpStatus,
+} from '@nestjs/common';
 import { Request } from 'express';
 import { Redis } from 'ioredis';
 import { ConfigService } from '@nestjs/config';
@@ -28,7 +34,7 @@ export class RateLimitGuard implements CanActivate {
     if (attempts > this.maxAttempts) {
       throw new HttpException(
         'Too many requests, please try again later',
-        HttpStatus.TOO_MANY_REQUESTS,
+        HttpStatus.TOO_MANY_REQUESTS
       );
     }
 

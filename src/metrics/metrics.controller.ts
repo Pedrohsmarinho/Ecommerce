@@ -4,7 +4,7 @@ import { MetricsService } from './metrics.service';
 
 @Controller()
 export class MetricsController {
-  constructor(private readonly metricsService: MetricsService) { }
+  constructor(private readonly metricsService: MetricsService) {}
 
   @Get('metrics')
   @Header('Content-Type', 'text/plain')
