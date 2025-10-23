@@ -1,17 +1,12 @@
 // src/metrics/http-metrics.interceptor.ts
-import {
-  Injectable,
-  NestInterceptor,
-  ExecutionContext,
-  CallHandler,
-} from '@nestjs/common';
+import { Injectable, NestInterceptor, ExecutionContext, CallHandler } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { MetricsService } from './metrics.service';
 
 @Injectable()
 export class HttpMetricsInterceptor implements NestInterceptor {
-  constructor(private readonly metricsService: MetricsService) { }
+  constructor(private readonly metricsService: MetricsService) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const req = context.switchToHttp().getRequest();
@@ -30,9 +25,9 @@ export class HttpMetricsInterceptor implements NestInterceptor {
           method,
           route,
           statusCode.toString(),
-          durationSeconds,
+          durationSeconds
         );
-      }),
+      })
     );
   }
 }

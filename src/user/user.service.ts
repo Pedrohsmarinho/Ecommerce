@@ -1,7 +1,13 @@
-import { Injectable, NotFoundException, ForbiddenException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+  ConflictException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { UserType } from '@prisma/client';
 import { sendVerificationEmail } from '../utils/email';
+import { generateVerificationToken } from '../utils/token';
 import { UpdateProfileDTO } from './dto/update-profile.dto';
 import { CreateUserDTO } from './dto/create-user.dto';
 
@@ -122,7 +128,7 @@ export class UserService {
       return { message: 'Email already verified' };
     }
 
-    const token = Math.random().toString(36).substring(2, 15);
+    const token = generateVerificationToken();
     const expires = new Date();
     expires.setHours(expires.getHours() + 24);
 
@@ -227,7 +233,7 @@ export class UserService {
     }
 
     // Generate verification token
-    const token = Math.random().toString(36).substring(2, 15);
+    const token = generateVerificationToken();
     const expires = new Date();
     expires.setHours(expires.getHours() + 24);
 

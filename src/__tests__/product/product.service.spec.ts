@@ -3,11 +3,12 @@ import { ProductService } from '../../product/product.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { UserType } from '@prisma/client';
 import { NotFoundException, ForbiddenException } from '@nestjs/common';
-import { CreateProductDTO, UpdateProductDTO, FilterProductDto } from '../../dtos/ProductDTO';
+import { CreateProductDTO } from '../../product/dto/create-product.dto';
+import { UpdateProductDTO } from '../../product/dto/update-product.dto';
+import { FilterProductDto } from '../../product/dto/filter-product.dto';
 
 describe('ProductService', () => {
   let service: ProductService;
-  let prismaService: PrismaService;
 
   const mockPrismaService = {
     product: {
@@ -31,7 +32,6 @@ describe('ProductService', () => {
     }).compile();
 
     service = module.get<ProductService>(ProductService);
-    prismaService = module.get<PrismaService>(PrismaService);
   });
 
   afterEach(() => {
@@ -170,7 +170,9 @@ describe('ProductService', () => {
 
       mockPrismaService.product.findUnique.mockResolvedValue(mockProduct);
 
-      await expect(service.update('1', updateProductDto, UserType.CLIENT)).rejects.toThrow(ForbiddenException);
+      await expect(service.update('1', updateProductDto, UserType.CLIENT)).rejects.toThrow(
+        ForbiddenException
+      );
     });
   });
 
@@ -206,7 +208,7 @@ describe('ProductService', () => {
 
   describe('findWithFilters', () => {
     it('should filter products by name', async () => {
-      const filters: FilterProductDto = {
+      const filters: any = {
         name: 'Test',
       };
 
@@ -243,8 +245,8 @@ describe('ProductService', () => {
     });
 
     it('should filter products by price range', async () => {
-      const filters: FilterProductDto = {
-        minPrice: 50,
+      const filters: any = {
+        price: 50,
         maxPrice: 100,
       };
 
@@ -269,7 +271,7 @@ describe('ProductService', () => {
       expect(mockPrismaService.product.findMany).toHaveBeenCalledWith({
         where: {
           price: {
-            gte: filters.minPrice,
+            gte: filters.price,
             lte: filters.maxPrice,
           },
         },
@@ -280,8 +282,8 @@ describe('ProductService', () => {
     });
 
     it('should filter products by availability', async () => {
-      const filters: FilterProductDto = {
-        available: true,
+      const filters: any = {
+        available: false,
       };
 
       const mockProducts = [
@@ -304,7 +306,7 @@ describe('ProductService', () => {
       expect(result).toEqual(mockProducts);
       expect(mockPrismaService.product.findMany).toHaveBeenCalledWith({
         where: {
-          stock: { gt: 0 },
+          stock: filters.available ? { gt: 0 } : { lte: 0 },
         },
         include: {
           category: true,

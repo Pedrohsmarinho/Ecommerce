@@ -1,7 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { AddToCartDto, UpdateCartItemDto } from '../dtos/cart.dto';
-import { Cart, Product } from '@prisma/client';
 
 @Injectable()
 export class CartService {
@@ -19,7 +18,7 @@ export class CartService {
 
     if (product.stock < addToCartDto.quantity) {
       throw new BadRequestException(
-        `Insufficient stock for product ${product.name}. Available: ${product.stock}, Requested: ${addToCartDto.quantity}`,
+        `Insufficient stock for product ${product.name}. Available: ${product.stock}, Requested: ${addToCartDto.quantity}`
       );
     }
 
@@ -39,7 +38,7 @@ export class CartService {
 
       if (product.stock < newQuantity) {
         throw new BadRequestException(
-          `Insufficient stock for product ${product.name}. Available: ${product.stock}, Requested: ${newQuantity}`,
+          `Insufficient stock for product ${product.name}. Available: ${product.stock}, Requested: ${newQuantity}`
         );
       }
 
@@ -86,7 +85,7 @@ export class CartService {
 
     if (cartItem.product.stock < updateCartItemDto.quantity) {
       throw new BadRequestException(
-        `Insufficient stock for product ${cartItem.product.name}. Available: ${cartItem.product.stock}, Requested: ${updateCartItemDto.quantity}`,
+        `Insufficient stock for product ${cartItem.product.name}. Available: ${cartItem.product.stock}, Requested: ${updateCartItemDto.quantity}`
       );
     }
 
@@ -152,7 +151,7 @@ export class CartService {
     });
 
     return cartItems.reduce((total, item) => {
-      return total + (Number(item.product.price) * item.quantity);
+      return total + Number(item.product.price) * item.quantity;
     }, 0);
   }
 }

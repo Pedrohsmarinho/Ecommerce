@@ -1,34 +1,30 @@
 {
-  "env": {
-    "browser": true,
-    "es2021": true,
-    "node": true
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "project": "tsconfig.json",
+    "sourceType": "module"
   },
+  "plugins": ["@typescript-eslint", "prettier"],
   "extends": [
     "eslint:recommended",
     "plugin:@typescript-eslint/recommended",
-    "plugin:react/recommended",
-    "plugin:react-hooks/recommended",
     "plugin:prettier/recommended"
   ],
-  "parser": "@typescript-eslint/parser",
-  "parserOptions": {
-    "ecmaFeatures": {
-      "jsx": true
-    },
-    "ecmaVersion": "latest",
-    "sourceType": "module"
+  "root": true,
+  "env": {
+    "node": true,
+    "jest": true
   },
-  "plugins": ["react", "@typescript-eslint", "prettier"],
+  "ignorePatterns": [".eslintrc.js", "dist", "node_modules"],
   "rules": {
-    "react/react-in-jsx-scope": "off",
     "prettier/prettier": "error",
+    "@typescript-eslint/interface-name-prefix": "off",
+    "@typescript-eslint/explicit-function-return-type": "off",
+    "@typescript-eslint/explicit-module-boundary-types": "off",
+    "@typescript-eslint/no-explicit-any": "warn",
+    "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
     "no-console": ["warn", { "allow": ["warn", "error"] }],
-    "react/prop-types": "off"
-  },
-  "settings": {
-    "react": {
-      "version": "detect"
-    }
+    "@typescript-eslint/no-floating-promises": "error",
+    "@typescript-eslint/await-thenable": "error"
   }
 }

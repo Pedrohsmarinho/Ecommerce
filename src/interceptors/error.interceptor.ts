@@ -1,4 +1,11 @@
-import { Injectable, NestInterceptor, ExecutionContext, CallHandler, HttpException, HttpStatus } from '@nestjs/common';
+import {
+  Injectable,
+  NestInterceptor,
+  ExecutionContext,
+  CallHandler,
+  HttpException,
+  HttpStatus,
+} from '@nestjs/common';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { Logger } from '@nestjs/common';
@@ -18,14 +25,14 @@ export class ErrorInterceptor implements NestInterceptor {
         // Log unauthorized access attempts
         if (error instanceof HttpException && error.getStatus() === HttpStatus.UNAUTHORIZED) {
           this.logger.warn(
-            `Unauthorized access attempt - IP: ${ip}, Method: ${method}, URL: ${originalUrl}, User-Agent: ${userAgent}`,
+            `Unauthorized access attempt - IP: ${ip}, Method: ${method}, URL: ${originalUrl}, User-Agent: ${userAgent}`
           );
         }
 
         // Log all errors with details
         this.logger.error(
           `Error occurred - IP: ${ip}, Method: ${method}, URL: ${originalUrl}, User-Agent: ${userAgent}`,
-          error.stack,
+          error.stack
         );
 
         // Standardize error response
@@ -47,7 +54,7 @@ export class ErrorInterceptor implements NestInterceptor {
           timestamp: new Date().toISOString(),
           path: originalUrl,
         }));
-      }),
+      })
     );
   }
 }

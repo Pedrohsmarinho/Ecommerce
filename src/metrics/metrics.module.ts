@@ -9,4 +9,4 @@ import { HttpMetricsInterceptor } from './http-metrics.interceptor';
   controllers: [MetricsController],
   exports: [MetricsService, HttpMetricsInterceptor],
 })
-export class MetricsModule { }
+export class MetricsModule {}

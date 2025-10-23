@@ -3,7 +3,7 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export enum PaymentStatus {
   CONFIRMED = 'CONFIRMED',
-  DECLINED = 'DECLINED'
+  DECLINED = 'DECLINED',
 }
 
 export class PaymentConfirmationDto {

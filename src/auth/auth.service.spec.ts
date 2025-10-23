@@ -7,8 +7,6 @@ import { ConflictException } from '@nestjs/common';
 
 describe('AuthService', () => {
   let service: AuthService;
-  let prismaService: PrismaService;
-  let jwtService: JwtService;
 
   const mockPrismaService = {
     user: {
@@ -41,8 +39,6 @@ describe('AuthService', () => {
     }).compile();
 
     service = module.get<AuthService>(AuthService);
-    prismaService = module.get<PrismaService>(PrismaService);
-    jwtService = module.get<JwtService>(JwtService);
   });
 
   afterEach(() => {
@@ -70,16 +66,9 @@ describe('AuthService', () => {
         emailVerifyTokenExpires: new Date(),
       };
 
-      const mockTokens = {
-        accessToken: 'access-token',
-        refreshToken: 'refresh-token',
-      };
-
       mockPrismaService.user.findUnique.mockResolvedValue(null);
       mockPrismaService.user.create.mockResolvedValue(mockUser);
       mockPrismaService.client.create.mockResolvedValue({});
-      mockJwtService.signAsync.mockResolvedValue(mockTokens.accessToken);
-      mockJwtService.signAsync.mockResolvedValue(mockTokens.refreshToken);
 
       const result = await service.register(
         registerDto.email,
@@ -87,7 +76,7 @@ describe('AuthService', () => {
         registerDto.name,
         registerDto.type,
         registerDto.contact,
-        registerDto.address,
+        registerDto.address
       );
 
       expect(result.user).toBeDefined();
@@ -111,9 +100,9 @@ describe('AuthService', () => {
           registerDto.name,
           registerDto.type,
           registerDto.contact,
-          registerDto.address,
-        ),
+          registerDto.address
+        )
       ).rejects.toThrow(ConflictException);
     });
   });
-}); 
+});

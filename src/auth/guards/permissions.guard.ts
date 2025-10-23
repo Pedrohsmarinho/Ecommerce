@@ -18,12 +18,9 @@ const rolePermissions: Record<UserType, Permission[]> = {
     'update:user',
     'delete:user',
     'view:users',
-    'manage:all'
+    'manage:all',
   ],
-  CLIENT: [
-    'read:product',
-    'view:orders'
-  ]
+  CLIENT: ['read:product', 'view:orders'],
 };
 
 @Injectable()
@@ -54,8 +51,6 @@ export class PermissionsGuard implements CanActivate {
     const userRole = user.type;
     const userPermissions = rolePermissions[userRole] || [];
 
-    return requiredPermissions.every(permission =>
-      userPermissions.includes(permission)
-    );
+    return requiredPermissions.every(permission => userPermissions.includes(permission));
   }
 }

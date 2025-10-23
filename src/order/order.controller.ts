@@ -73,7 +73,7 @@ export class OrderController {
   @ApiResponse({ status: 404, description: 'Order not found' })
   async confirmPayment(
     @Param('id') id: string,
-    @Body() paymentConfirmationDto: PaymentConfirmationDto,
+    @Body() paymentConfirmationDto: PaymentConfirmationDto
   ) {
     return this.orderService.confirmPayment(id, paymentConfirmationDto.status);
   }

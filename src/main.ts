@@ -16,12 +16,13 @@ async function bootstrap() {
   app.enableCors();
 
   // Global pipes
-  app.useGlobalPipes(new ValidationPipe({
-    transform: true,
-    whitelist: true,
-    forbidNonWhitelisted: true,
-  }));
-
+  app.useGlobalPipes(
+    new ValidationPipe({
+      transform: true,
+      whitelist: true,
+      forbidNonWhitelisted: true,
+    })
+  );
 
   const httpMetricsInterceptor = app.get(HttpMetricsInterceptor);
 
@@ -29,7 +30,7 @@ async function bootstrap() {
   app.useGlobalInterceptors(
     new ErrorInterceptor(),
     new CacheInterceptor(configService),
-    httpMetricsInterceptor,
+    httpMetricsInterceptor
   );
 
   // Global guards
@@ -47,4 +48,4 @@ async function bootstrap() {
 
   await app.listen(3000);
 }
-bootstrap();
+void bootstrap();

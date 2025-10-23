@@ -28,9 +28,9 @@ export class CacheInterceptor implements NestInterceptor {
 
     // If not in cache, get from handler and cache it
     return next.handle().pipe(
-      tap(async (data) => {
+      tap(async data => {
         await this.redis.setex(key, this.defaultTTL, JSON.stringify(data));
-      }),
+      })
     );
   }
 

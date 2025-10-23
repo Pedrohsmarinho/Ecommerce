@@ -8,7 +8,6 @@ export class BaseDto {
   @Transform(({ value }) => Number(value))
   price?: number;
 
-  @IsString()
   @Matches(/^\+?[1-9]\d{1,14}$/, {
     message: 'Invalid phone number format. Must be a valid international number.',
   })

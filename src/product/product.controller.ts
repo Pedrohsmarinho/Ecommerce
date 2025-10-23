@@ -1,6 +1,18 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  Query,
+} from '@nestjs/common';
 import { ProductService } from './product.service';
-import { CreateProductDTO, UpdateProductDTO, FilterProductDto } from '../dtos/ProductDTO';
+import { CreateProductDTO } from './dto/create-product.dto';
+import { UpdateProductDTO } from './dto/update-product.dto';
+import { FilterProductDto } from './dto/filter-product.dto';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';

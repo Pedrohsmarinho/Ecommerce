@@ -6,10 +6,9 @@ import { NotFoundException, BadRequestException } from '@nestjs/common';
 
 describe('OrderService', () => {
   let service: OrderService;
-  let prismaService: PrismaService;
 
   const mockPrismaService = {
-    $transaction: jest.fn((callback) => callback(mockPrismaService)),
+    $transaction: jest.fn(callback => callback(mockPrismaService)),
     client: {
       findUnique: jest.fn(),
     },
@@ -33,7 +32,6 @@ describe('OrderService', () => {
     }).compile();
 
     service = module.get<OrderService>(OrderService);
-    prismaService = module.get<PrismaService>(PrismaService);
   });
 
   afterEach(() => {
@@ -64,13 +62,13 @@ describe('OrderService', () => {
       {
         id: 'product-1',
         name: 'Product 1',
-        price: 50.00,
+        price: 50.0,
         stock: 10,
       },
       {
         id: 'product-2',
         name: 'Product 2',
-        price: 30.00,
+        price: 30.0,
         stock: 5,
       },
     ];
@@ -79,22 +77,22 @@ describe('OrderService', () => {
       id: 'order-1',
       clientId: createOrderDto.clientId,
       status: OrderStatus.RECEIVED,
-      total: 130.00,
+      total: 130.0,
       items: [
         {
           id: 'item-1',
           productId: 'product-1',
           quantity: 2,
-          unitPrice: 50.00,
-          subtotal: 100.00,
+          unitPrice: 50.0,
+          subtotal: 100.0,
           product: mockProducts[0],
         },
         {
           id: 'item-2',
           productId: 'product-2',
           quantity: 1,
-          unitPrice: 30.00,
-          subtotal: 30.00,
+          unitPrice: 30.0,
+          subtotal: 30.0,
           product: mockProducts[1],
         },
       ],
@@ -120,7 +118,7 @@ describe('OrderService', () => {
       expect(result).toBeDefined();
       expect(result.id).toBe(mockOrder.id);
       expect(result.status).toBe(OrderStatus.RECEIVED);
-      expect(result.total).toBe(130.00);
+      expect(result.total).toBe(130.0);
       expect(result.items).toHaveLength(2);
       expect(mockPrismaService.order.create).toHaveBeenCalled();
     });
@@ -148,4 +146,4 @@ describe('OrderService', () => {
       await expect(service.create(createOrderDto)).rejects.toThrow(BadRequestException);
     });
   });
-}); 
+});

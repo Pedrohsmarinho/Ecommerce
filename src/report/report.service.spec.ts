@@ -7,8 +7,6 @@ import { UserType } from '@prisma/client';
 
 describe('ReportService', () => {
   let service: ReportService;
-  let prismaService: PrismaService;
-  let s3Service: S3Service;
 
   const mockPrismaService = {
     $queryRaw: jest.fn(),
@@ -40,8 +38,6 @@ describe('ReportService', () => {
     }).compile();
 
     service = module.get<ReportService>(ReportService);
-    prismaService = module.get<PrismaService>(PrismaService);
-    s3Service = module.get<S3Service>(S3Service);
   });
 
   afterEach(() => {
@@ -62,15 +58,15 @@ describe('ReportService', () => {
         product_name: 'Test Product',
         total_orders: 5,
         total_quantity: 10,
-        total_revenue: 500.00,
-        average_price: 50.00,
+        total_revenue: 500.0,
+        average_price: 50.0,
       },
     ];
 
     const mockTotals = [
       {
         total_orders: BigInt(5),
-        total_revenue: 500.00,
+        total_revenue: 500.0,
       },
     ];
 
@@ -80,7 +76,7 @@ describe('ReportService', () => {
       endDate: new Date(generateReportDto.endDate),
       fileName: 'sales_report_1234567890.csv',
       filePath: 'reports/sales_report_1234567890.csv',
-      totalSales: 500.00,
+      totalSales: 500.0,
       totalOrders: 5,
       filters: generateReportDto,
       userId: 'user-1',
@@ -104,7 +100,7 @@ describe('ReportService', () => {
       expect(result.report.totalOrders).toBe(mockReport.totalOrders);
       expect(result.summary).toBeDefined();
       expect(result.summary.totalOrders).toBe(5);
-      expect(result.summary.totalRevenue).toBe(500.00);
+      expect(result.summary.totalRevenue).toBe(500.0);
       expect(result.report.filePath).toBe(mockReport.filePath);
       expect(mockS3Service.uploadFile).toHaveBeenCalled();
     });

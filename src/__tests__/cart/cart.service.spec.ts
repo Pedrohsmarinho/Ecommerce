@@ -6,7 +6,6 @@ import { AddToCartDto, UpdateCartItemDto } from '../../dtos/cart.dto';
 
 describe('CartService', () => {
   let service: CartService;
-  let prismaService: PrismaService;
 
   const mockPrismaService = {
     cart: {
@@ -35,7 +34,6 @@ describe('CartService', () => {
     }).compile();
 
     service = module.get<CartService>(CartService);
-    prismaService = module.get<PrismaService>(PrismaService);
   });
 
   afterEach(() => {
@@ -219,7 +217,9 @@ describe('CartService', () => {
 
       mockPrismaService.cart.findFirst.mockResolvedValue(null);
 
-      await expect(service.updateCartItem(clientId, cartItemId, updateCartItemDto)).rejects.toThrow(NotFoundException);
+      await expect(service.updateCartItem(clientId, cartItemId, updateCartItemDto)).rejects.toThrow(
+        NotFoundException
+      );
     });
 
     it('should throw BadRequestException when insufficient stock', async () => {
@@ -246,7 +246,9 @@ describe('CartService', () => {
 
       mockPrismaService.cart.findFirst.mockResolvedValue(mockCartItem);
 
-      await expect(service.updateCartItem(clientId, cartItemId, updateCartItemDto)).rejects.toThrow(BadRequestException);
+      await expect(service.updateCartItem(clientId, cartItemId, updateCartItemDto)).rejects.toThrow(
+        BadRequestException
+      );
     });
   });
 

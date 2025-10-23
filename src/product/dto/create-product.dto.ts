@@ -21,4 +21,9 @@ export class CreateProductDTO {
   @IsNumber()
   @Min(0)
   stock: number;
+
+  @ApiProperty({ example: 'e5c3eec0-8a1c-4e7a-bad5-02dfd56c5a24' })
+  @IsString()
+  @IsNotEmpty()
+  categoryId: string;
 }

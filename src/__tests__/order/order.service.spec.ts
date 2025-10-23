@@ -8,10 +8,9 @@ import { PaymentStatus } from '../../dtos/payment.dto';
 
 describe('OrderService', () => {
   let service: OrderService;
-  let prismaService: PrismaService;
 
   const mockPrismaService = {
-    $transaction: jest.fn((callback) => callback(mockPrismaService)),
+    $transaction: jest.fn(callback => callback(mockPrismaService)),
     order: {
       findUnique: jest.fn(),
       findMany: jest.fn(),
@@ -39,7 +38,6 @@ describe('OrderService', () => {
     }).compile();
 
     service = module.get<OrderService>(OrderService);
-    prismaService = module.get<PrismaService>(PrismaService);
   });
 
   afterEach(() => {
@@ -239,7 +237,9 @@ describe('OrderService', () => {
 
       mockPrismaService.order.findUnique.mockResolvedValue(null);
 
-      await expect(service.updateOrderStatus(orderId, newStatus)).rejects.toThrow(NotFoundException);
+      await expect(service.updateOrderStatus(orderId, newStatus)).rejects.toThrow(
+        NotFoundException
+      );
     });
 
     it('should throw BadRequestException for invalid status transition', async () => {
@@ -259,7 +259,9 @@ describe('OrderService', () => {
 
       mockPrismaService.order.findUnique.mockResolvedValue(mockOrder);
 
-      await expect(service.updateOrderStatus(orderId, newStatus)).rejects.toThrow(BadRequestException);
+      await expect(service.updateOrderStatus(orderId, newStatus)).rejects.toThrow(
+        BadRequestException
+      );
     });
 
     it('should restore stock when cancelling order', async () => {
@@ -347,7 +349,9 @@ describe('OrderService', () => {
 
       mockPrismaService.order.findUnique.mockResolvedValue(null);
 
-      await expect(service.confirmPayment(orderId, paymentStatus)).rejects.toThrow(NotFoundException);
+      await expect(service.confirmPayment(orderId, paymentStatus)).rejects.toThrow(
+        NotFoundException
+      );
     });
 
     it('should throw BadRequestException when order is not in RECEIVED status', async () => {
@@ -367,7 +371,9 @@ describe('OrderService', () => {
 
       mockPrismaService.order.findUnique.mockResolvedValue(mockOrder);
 
-      await expect(service.confirmPayment(orderId, paymentStatus)).rejects.toThrow(BadRequestException);
+      await expect(service.confirmPayment(orderId, paymentStatus)).rejects.toThrow(
+        BadRequestException
+      );
     });
   });
 

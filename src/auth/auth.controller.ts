@@ -1,7 +1,6 @@
-import { Controller, Post, Body, UnauthorizedException, UseGuards, Get, Req, Request } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Get, Req, Request, HttpCode } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { LocalAuthGuard } from './guards/local-auth.guard';
@@ -16,6 +15,7 @@ export class AuthController {
 
   @UseGuards(LocalAuthGuard)
   @Post('login')
+  @HttpCode(200)
   @ApiOperation({ summary: 'User login' })
   @ApiResponse({ status: 200, description: 'Login successful' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
@@ -44,16 +44,17 @@ export class AuthController {
   }
 
   @Post('refresh')
+  @HttpCode(200)
+  @ApiOperation({ summary: 'Refresh access token' })
+  @ApiResponse({ status: 200, description: 'Tokens refreshed successfully' })
+  @ApiResponse({ status: 401, description: 'Invalid or expired refresh token' })
   async refreshToken(@Body() body: { refreshToken: string }) {
-    const decoded = this.authService.jwtService.decode(body.refreshToken) as any;
-    if (!decoded || !decoded.sub) {
-      throw new UnauthorizedException('Invalid refresh token');
-    }
-    return this.authService.refreshToken(decoded.sub, body.refreshToken);
+    return this.authService.refreshToken(body.refreshToken);
   }
 
   @UseGuards(JwtAuthGuard)
   @Post('logout')
+  @HttpCode(200)
   async logout(@Req() req) {
     return this.authService.logout(req.user.id);
   }
@@ -64,7 +65,7 @@ export class AuthController {
   testClientRoute(@Request() req) {
     return {
       message: 'Client route accessed successfully',
-      user: req.user
+      user: req.user,
     };
   }
 
@@ -74,7 +75,7 @@ export class AuthController {
   testAdminRoute(@Request() req) {
     return {
       message: 'Admin route accessed successfully',
-      user: req.user
+      user: req.user,
     };
   }
 }

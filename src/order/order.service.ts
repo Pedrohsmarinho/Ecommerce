@@ -10,7 +10,7 @@ export class OrderService {
 
   async create(createOrderDto: CreateOrderDto) {
     // Start a transaction to create order and items
-    return this.prisma.$transaction(async (prisma) => {
+    return this.prisma.$transaction(async prisma => {
       // Verify client exists
       const client = await prisma.client.findUnique({
         where: { id: createOrderDto.clientId },
@@ -35,7 +35,7 @@ export class OrderService {
 
         if (product.stock < item.quantity) {
           throw new BadRequestException(
-            `Insufficient stock for product ${product.name}. Available: ${product.stock}, Requested: ${item.quantity}`,
+            `Insufficient stock for product ${product.name}. Available: ${product.stock}, Requested: ${item.quantity}`
           );
         }
 
@@ -89,7 +89,7 @@ export class OrderService {
 
     if (!validTransitions[order.status].includes(newStatus)) {
       throw new BadRequestException(
-        `Cannot transition order from ${order.status} to ${newStatus}. Valid transitions are: ${validTransitions[order.status].join(', ')}`,
+        `Cannot transition order from ${order.status} to ${newStatus}. Valid transitions are: ${validTransitions[order.status].join(', ')}`
       );
     }
   }
@@ -114,7 +114,7 @@ export class OrderService {
 
     // If cancelling an order, restore the stock
     if (newStatus === OrderStatus.CANCELLED && order.status !== OrderStatus.CANCELLED) {
-      return this.prisma.$transaction(async (prisma) => {
+      return this.prisma.$transaction(async prisma => {
         // Restore stock for each item
         for (const item of order.items) {
           await prisma.product.update({
@@ -200,7 +200,7 @@ export class OrderService {
   }
 
   async confirmPayment(orderId: string, paymentStatus: PaymentStatus) {
-    return this.prisma.$transaction(async (prisma) => {
+    return this.prisma.$transaction(async prisma => {
       const order = await prisma.order.findUnique({
         where: { id: orderId },
         include: {
@@ -217,7 +217,9 @@ export class OrderService {
       }
 
       if (order.status !== OrderStatus.RECEIVED) {
-        throw new BadRequestException(`Order is not in RECEIVED status. Current status: ${order.status}`);
+        throw new BadRequestException(
+          `Order is not in RECEIVED status. Current status: ${order.status}`
+        );
       }
 
       if (paymentStatus === PaymentStatus.CONFIRMED) {

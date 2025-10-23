@@ -15,6 +15,7 @@ describe('ProductController', () => {
     findOne: jest.fn(),
     update: jest.fn(),
     remove: jest.fn(),
+    findWithFilters: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -39,6 +40,7 @@ describe('ProductController', () => {
         description: 'Test Description',
         price: 99.99,
         stock: 10,
+        categoryId: 'test-category-id',
       };
 
       const mockProduct = {
@@ -73,7 +75,7 @@ describe('ProductController', () => {
 
       mockProductService.findAll.mockResolvedValue(mockProducts);
 
-      const result = await controller.findAll({});
+      const result = await controller.findAll({} as any);
 
       expect(result).toEqual(mockProducts);
       expect(productService.findAll).toHaveBeenCalled();
@@ -124,7 +126,11 @@ describe('ProductController', () => {
       const result = await controller.update(productId, updateProductDto);
 
       expect(result).toEqual(mockProduct);
-      expect(productService.update).toHaveBeenCalledWith(productId, updateProductDto, UserType.ADMIN);
+      expect(productService.update).toHaveBeenCalledWith(
+        productId,
+        updateProductDto,
+        UserType.ADMIN
+      );
     });
   });
 
