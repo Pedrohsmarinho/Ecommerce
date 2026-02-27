@@ -8,9 +8,12 @@ import { RateLimitGuard } from './guards/rate-limit.guard';
 import { ConfigService } from '@nestjs/config';
 import { HttpMetricsInterceptor } from './metrics/http-metrics.interceptor';
 
+import { RedisService } from './redis/redis.service';
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
+  const redisService = app.get(RedisService);
 
   // Enable CORS
   app.enableCors();
@@ -29,12 +32,12 @@ async function bootstrap() {
   // Global interceptors
   app.useGlobalInterceptors(
     new ErrorInterceptor(),
-    new CacheInterceptor(configService),
+    new CacheInterceptor(redisService),
     httpMetricsInterceptor
   );
 
   // Global guards
-  app.useGlobalGuards(new RateLimitGuard(configService));
+  app.useGlobalGuards(new RateLimitGuard(redisService));
 
   // Swagger setup
   const config = new DocumentBuilder()
